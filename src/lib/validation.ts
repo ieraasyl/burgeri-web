@@ -2,37 +2,41 @@ import { z } from "zod"
 
 import {
   userRoles,
-  writeOffDeductionTypes,
-  writeOffProductTypes,
+  writeOffDeductionModes,
   writeOffStatuses,
 } from "@/db/schema"
-import { restaurantLocationIds } from "@/lib/write-offs"
 
-export const createWriteOffRequestSchema = z
+// Employee identifier (табельный номер) used as the better-auth username.
+const employeeIdSchema = z
+  .string()
+  .trim()
+  .min(2, "Use at least 2 characters.")
+  .max(40, "Keep it under 40 characters.")
+  .regex(/^[A-Za-z0-9_-]+$/, "Use letters, numbers, hyphens, or underscores.")
+
+export const submitWriteOffSchema = z
   .object({
-    locationId: z.enum(restaurantLocationIds),
-    productType: z.enum(writeOffProductTypes),
-    quantity: z.number().int().min(1).max(100),
-    deductionType: z.enum(writeOffDeductionTypes),
-    chargedEmployeeId: z.string().trim().nullable(),
+    photoFileId: z.string().trim().min(1, "Attach a photo."),
+    productId: z.string().trim().min(1, "Choose a product."),
+    quantity: z
+      .number()
+      .positive("Enter a quantity greater than zero.")
+      .max(100_000),
+    pointOfSaleId: z.string().trim().min(1, "Choose a point of sale."),
+    deductionMode: z.enum(writeOffDeductionModes),
+    deductionEmployeeId: z.string().trim().nullable().optional(),
+    writeOffCategoryId: z.string().trim().min(1, "Choose a write-off category."),
     comment: z
       .string()
       .trim()
       .min(10, "Add at least 10 characters.")
       .max(1_000),
-    photoDataUrl: z
-      .string()
-      .max(2_100_000, "The photo must be smaller than 1.5 MB.")
-      .regex(
-        /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/,
-        "Attach a JPEG, PNG, or WebP photo."
-      ),
   })
   .superRefine((value, context) => {
-    if (value.deductionType === "employee" && !value.chargedEmployeeId) {
+    if (value.deductionMode === "employee" && !value.deductionEmployeeId) {
       context.addIssue({
         code: "custom",
-        path: ["chargedEmployeeId"],
+        path: ["deductionEmployeeId"],
         message: "Choose the employee responsible for the deduction.",
       })
     }
@@ -63,14 +67,30 @@ export const setStaffRoleSchema = z.object({
   role: z.enum(userRoles),
 })
 
-export type CreateWriteOffRequestInput = z.infer<
-  typeof createWriteOffRequestSchema
->
+export const createEmployeeSchema = z.object({
+  name: z.string().trim().min(2, "Enter a name.").max(120),
+  employeeId: employeeIdSchema,
+  password: z.string().min(8, "Use at least 8 characters.").max(128),
+  defaultPointOfSaleId: z
+    .string()
+    .trim()
+    .transform((value) => (value.length ? value : null))
+    .nullable(),
+})
+
+export const setEmployeePasswordSchema = z.object({
+  userId: z.string().min(1),
+  password: z.string().min(8, "Use at least 8 characters.").max(128),
+})
+
+export type SubmitWriteOffInput = z.infer<typeof submitWriteOffSchema>
 export type ReviewWriteOffRequestInput = z.infer<
   typeof reviewWriteOffRequestSchema
 >
 export type SyncWriteOffToIikoInput = z.infer<typeof syncWriteOffToIikoSchema>
 export type SetStaffRoleInput = z.infer<typeof setStaffRoleSchema>
+export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>
+export type SetEmployeePasswordInput = z.infer<typeof setEmployeePasswordSchema>
 
 export function getZodFieldErrors(error: z.ZodError) {
   const fieldErrors: Record<string, string[]> = {}

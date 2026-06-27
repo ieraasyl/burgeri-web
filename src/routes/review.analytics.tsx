@@ -1,9 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 
-import { productTypeLabels } from "@/lib/write-offs"
-import type { WriteOffProductType } from "@/lib/write-offs"
-
 const getAnalytics = createServerFn({ method: "GET" }).handler(async () => {
   const { getWriteOffAnalyticsData } = await import("@/lib/write-offs.server")
   return getWriteOffAnalyticsData()
@@ -19,7 +16,8 @@ function AnalyticsPage() {
   const trendMax = Math.max(1, ...data.trend.map((day) => day.total))
   const locationMax = Math.max(1, ...data.byLocation.map((row) => row.total))
   const productMax = Math.max(1, ...data.byProduct.map((row) => row.total))
-  const deductionTotal = data.byDeduction.company + data.byDeduction.employee
+  const categoryMax = Math.max(1, ...data.byCategory.map((row) => row.total))
+  const deductionTotal = data.byDeduction.none + data.byDeduction.employee
 
   return (
     <div className="flex flex-col gap-8">
@@ -63,53 +61,24 @@ function AnalyticsPage() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border bg-card p-5">
-          <h2 className="font-heading text-lg font-semibold">By restaurant</h2>
-          <div className="mt-4 flex flex-col gap-3">
-            {data.byLocation.length === 0 ? (
-              <Empty />
-            ) : (
-              data.byLocation.map((row) => (
-                <BarRow
-                  key={row.id}
-                  label={row.name}
-                  value={row.total}
-                  max={locationMax}
-                  meta={`${row.pending} pending · ${row.approved} approved`}
-                />
-              ))
-            )}
-          </div>
-        </section>
+        <BarSection
+          title="By point of sale"
+          rows={data.byLocation}
+          max={locationMax}
+        />
+        <BarSection title="By product" rows={data.byProduct} max={productMax} />
+        <BarSection
+          title="By write-off category"
+          rows={data.byCategory}
+          max={categoryMax}
+        />
 
         <section className="rounded-2xl border bg-card p-5">
-          <h2 className="font-heading text-lg font-semibold">By product</h2>
-          <div className="mt-4 flex flex-col gap-3">
-            {data.byProduct.length === 0 ? (
-              <Empty />
-            ) : (
-              data.byProduct.map((row) => (
-                <BarRow
-                  key={row.productType}
-                  label={
-                    productTypeLabels[row.productType as WriteOffProductType]
-                  }
-                  value={row.total}
-                  max={productMax}
-                />
-              ))
-            )}
-          </div>
-        </section>
-
-        <section className="rounded-2xl border bg-card p-5">
-          <h2 className="font-heading text-lg font-semibold">
-            Deduction split
-          </h2>
+          <h2 className="font-heading text-lg font-semibold">Deduction split</h2>
           <div className="mt-4 flex flex-col gap-3">
             <BarRow
               label="No employee deduction"
-              value={data.byDeduction.company}
+              value={data.byDeduction.none}
               max={Math.max(1, deductionTotal)}
             />
             <BarRow
@@ -125,7 +94,7 @@ function AnalyticsPage() {
             ) : (
               data.topChargedEmployees.map((row) => (
                 <div
-                  key={row.userId}
+                  key={row.id}
                   className="flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-sm"
                 >
                   <span className="truncate">{row.name}</span>
@@ -140,16 +109,8 @@ function AnalyticsPage() {
           <h2 className="font-heading text-lg font-semibold">iiko sync</h2>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <SyncTile label="Not started" value={data.iikoSync.not_started} />
-            <SyncTile
-              label="Queued"
-              value={data.iikoSync.queued}
-              tone="amber"
-            />
-            <SyncTile
-              label="Synced"
-              value={data.iikoSync.synced}
-              tone="green"
-            />
+            <SyncTile label="Queued" value={data.iikoSync.queued} tone="amber" />
+            <SyncTile label="Synced" value={data.iikoSync.synced} tone="green" />
             <SyncTile label="Failed" value={data.iikoSync.failed} tone="red" />
           </div>
         </section>
@@ -158,16 +119,44 @@ function AnalyticsPage() {
   )
 }
 
+function BarSection({
+  title,
+  rows,
+  max,
+}: {
+  title: string
+  rows: Array<{ id: string; name: string; total: number }>
+  max: number
+}) {
+  return (
+    <section className="rounded-2xl border bg-card p-5">
+      <h2 className="font-heading text-lg font-semibold">{title}</h2>
+      <div className="mt-4 flex flex-col gap-3">
+        {rows.length === 0 ? (
+          <Empty />
+        ) : (
+          rows.map((row) => (
+            <BarRow
+              key={row.id}
+              label={row.name}
+              value={row.total}
+              max={max}
+            />
+          ))
+        )}
+      </div>
+    </section>
+  )
+}
+
 function BarRow({
   label,
   value,
   max,
-  meta,
 }: {
   label: string
   value: number
   max: number
-  meta?: string
 }) {
   return (
     <div>
@@ -181,7 +170,6 @@ function BarRow({
           style={{ width: `${Math.round((value / max) * 100)}%` }}
         />
       </div>
-      {meta && <p className="mt-1 text-xs text-muted-foreground">{meta}</p>}
     </div>
   )
 }

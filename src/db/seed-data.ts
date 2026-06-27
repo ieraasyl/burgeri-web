@@ -1,35 +1,57 @@
 import type {
   iikoSyncStatuses,
   userRoles,
-  writeOffDeductionTypes,
-  writeOffProductTypes,
+  writeOffDeductionModes,
   writeOffStatuses,
 } from "@/db/schema"
 
 type UserRole = (typeof userRoles)[number]
-type ProductType = (typeof writeOffProductTypes)[number]
-type DeductionType = (typeof writeOffDeductionTypes)[number]
+type DeductionMode = (typeof writeOffDeductionModes)[number]
 type WriteOffStatus = (typeof writeOffStatuses)[number]
 type IikoSyncStatus = (typeof iikoSyncStatuses)[number]
 
+export interface SeedPointOfSale {
+  id: string
+  name: string
+  address: string
+}
+export interface SeedProductCategory {
+  id: string
+  name: string
+  position: number
+}
+export interface SeedProduct {
+  id: string
+  categoryId: string
+  name: string
+  sku: string
+  unit: string
+}
+export interface SeedWriteOffCategory {
+  id: string
+  name: string
+  position: number
+}
 export interface SeedUser {
   id: string
   name: string
   email: string
   role: UserRole
-  defaultLocationId: string | null
+  username: string | null
+  displayUsername: string | null
+  defaultPointOfSaleId: string | null
 }
-
 export interface SeedWriteOff {
   id: string
+  requestNumber: string
   submitterId: string
-  locationId: string
-  productType: ProductType
+  pointOfSaleId: string
+  productId: string
+  writeOffCategoryId: string
   quantity: number
-  deductionType: DeductionType
-  chargedEmployeeId: string | null
+  deductionMode: DeductionMode
+  deductionEmployeeId: string | null
   comment: string
-  photoDataUrl: string
   status: WriteOffStatus
   reviewerId: string | null
   reviewComment: string | null
@@ -39,10 +61,79 @@ export interface SeedWriteOff {
   createdAt: Date
 }
 
-// 1x1 transparent PNG — a valid placeholder that passes the photo validator and
-// renders as a tile in the reviewer queue until real device photos arrive.
-const PHOTO =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+export const seedPointsOfSale: SeedPointOfSale[] = [
+  { id: "pos-abai", name: "Burgeri · Abai", address: "Abai Ave 10, Almaty" },
+  {
+    id: "pos-mega",
+    name: "Burgeri · MEGA Almaty",
+    address: "Rozybakiev St 247, Almaty",
+  },
+  {
+    id: "pos-dostyk",
+    name: "Burgeri · Dostyk Plaza",
+    address: "Samal-2 16, Almaty",
+  },
+  {
+    id: "pos-airport",
+    name: "Burgeri · Almaty Airport",
+    address: "Mailin St 2, Almaty",
+  },
+]
+
+export const seedProductCategories: SeedProductCategory[] = [
+  { id: "cat-vegetables", name: "Vegetables", position: 1 },
+  { id: "cat-meat", name: "Meat", position: 2 },
+  { id: "cat-bakery", name: "Bakery", position: 3 },
+  { id: "cat-sides", name: "Sides", position: 4 },
+  { id: "cat-other", name: "Other", position: 5 },
+]
+
+export const seedProducts: SeedProduct[] = [
+  {
+    id: "prod-tomato",
+    categoryId: "cat-vegetables",
+    name: "Tomato",
+    sku: "VEG-TOM",
+    unit: "pcs",
+  },
+  {
+    id: "prod-patty",
+    categoryId: "cat-meat",
+    name: "Beef patty",
+    sku: "MEA-PAT",
+    unit: "pcs",
+  },
+  {
+    id: "prod-bun",
+    categoryId: "cat-bakery",
+    name: "Burger bun",
+    sku: "BAK-BUN",
+    unit: "pcs",
+  },
+  {
+    id: "prod-fries",
+    categoryId: "cat-sides",
+    name: "French fries",
+    sku: "SID-FRY",
+    unit: "portion",
+  },
+  {
+    id: "prod-shake",
+    categoryId: "cat-other",
+    name: "Milkshake mix",
+    sku: "OTH-SHK",
+    unit: "l",
+  },
+]
+
+export const seedWriteOffCategories: SeedWriteOffCategory[] = [
+  { id: "woc-spoiled", name: "Spoiled / overripe", position: 1 },
+  { id: "woc-damaged", name: "Damaged in storage", position: 2 },
+  { id: "woc-dropped", name: "Dropped (sanitary)", position: 3 },
+  { id: "woc-overcooked", name: "Overcooked", position: 4 },
+  { id: "woc-expired", name: "Expired", position: 5 },
+  { id: "woc-other", name: "Other", position: 6 },
+]
 
 export const seedUsers: SeedUser[] = [
   {
@@ -50,49 +141,63 @@ export const seedUsers: SeedUser[] = [
     name: "Aibek Admin",
     email: "admin@burgeri.kz",
     role: "admin",
-    defaultLocationId: "mega-almaty",
+    username: null,
+    displayUsername: null,
+    defaultPointOfSaleId: "pos-mega",
   },
   {
     id: "usr_reviewer_dana",
     name: "Dana Reviewer",
     email: "reviewer@burgeri.kz",
     role: "reviewer",
-    defaultLocationId: "mega-almaty",
+    username: null,
+    displayUsername: null,
+    defaultPointOfSaleId: "pos-mega",
   },
   {
     id: "usr_reviewer_marat",
     name: "Marat Manager",
     email: "manager@burgeri.kz",
     role: "reviewer",
-    defaultLocationId: "dostyk-plaza",
+    username: null,
+    displayUsername: null,
+    defaultPointOfSaleId: "pos-dostyk",
   },
   {
     id: "usr_emp_aigerim",
     name: "Aigerim Satbek",
-    email: "aigerim@burgeri.kz",
+    email: "emp-1001@staff.burgeri.local",
     role: "employee",
-    defaultLocationId: "abai",
+    username: "emp-1001",
+    displayUsername: "EMP-1001",
+    defaultPointOfSaleId: "pos-abai",
   },
   {
     id: "usr_emp_daulet",
     name: "Daulet Nurlan",
-    email: "daulet@burgeri.kz",
+    email: "emp-1002@staff.burgeri.local",
     role: "employee",
-    defaultLocationId: "mega-almaty",
+    username: "emp-1002",
+    displayUsername: "EMP-1002",
+    defaultPointOfSaleId: "pos-mega",
   },
   {
     id: "usr_emp_nurlan",
     name: "Nurlan Asanov",
-    email: "nurlan@burgeri.kz",
+    email: "emp-1003@staff.burgeri.local",
     role: "employee",
-    defaultLocationId: "dostyk-plaza",
+    username: "emp-1003",
+    displayUsername: "EMP-1003",
+    defaultPointOfSaleId: "pos-dostyk",
   },
   {
     id: "usr_emp_saule",
     name: "Saule Erbol",
-    email: "saule@burgeri.kz",
+    email: "emp-1004@staff.burgeri.local",
     role: "employee",
-    defaultLocationId: "airport",
+    username: "emp-1004",
+    displayUsername: "EMP-1004",
+    defaultPointOfSaleId: "pos-airport",
   },
 ]
 
@@ -106,14 +211,15 @@ function daysAgo(days: number, hour = 12) {
 export const seedWriteOffs: SeedWriteOff[] = [
   {
     id: "wo_0001",
+    requestNumber: "WO-0001",
     submitterId: "usr_emp_aigerim",
-    locationId: "abai",
-    productType: "tomatoes",
+    pointOfSaleId: "pos-abai",
+    productId: "prod-tomato",
+    writeOffCategoryId: "woc-spoiled",
     quantity: 8,
-    deductionType: "company",
-    chargedEmployeeId: null,
+    deductionMode: "none",
+    deductionEmployeeId: null,
     comment: "Tomatoes arrived overripe in the morning delivery, not usable.",
-    photoDataUrl: PHOTO,
     status: "approved",
     reviewerId: "usr_reviewer_dana",
     reviewComment: "Confirmed with the morning shift lead.",
@@ -124,14 +230,15 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0002",
+    requestNumber: "WO-0002",
     submitterId: "usr_emp_daulet",
-    locationId: "mega-almaty",
-    productType: "patty",
+    pointOfSaleId: "pos-mega",
+    productId: "prod-patty",
+    writeOffCategoryId: "woc-overcooked",
     quantity: 3,
-    deductionType: "employee",
-    chargedEmployeeId: "usr_emp_daulet",
+    deductionMode: "employee",
+    deductionEmployeeId: "usr_emp_daulet",
     comment: "Patties overcooked on the grill during the lunch rush.",
-    photoDataUrl: PHOTO,
     status: "approved",
     reviewerId: "usr_reviewer_dana",
     reviewComment: "Accepted, reminder sent about grill timing.",
@@ -142,14 +249,15 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0003",
+    requestNumber: "WO-0003",
     submitterId: "usr_emp_nurlan",
-    locationId: "dostyk-plaza",
-    productType: "bun",
+    pointOfSaleId: "pos-dostyk",
+    productId: "prod-bun",
+    writeOffCategoryId: "woc-damaged",
     quantity: 5,
-    deductionType: "company",
-    chargedEmployeeId: null,
+    deductionMode: "none",
+    deductionEmployeeId: null,
     comment: "Buns crushed in storage when a box fell from the shelf.",
-    photoDataUrl: PHOTO,
     status: "rejected",
     reviewerId: "usr_reviewer_marat",
     reviewComment: "Please attach a clearer photo of the damage next time.",
@@ -160,14 +268,15 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0004",
+    requestNumber: "WO-0004",
     submitterId: "usr_emp_saule",
-    locationId: "airport",
-    productType: "fries",
+    pointOfSaleId: "pos-airport",
+    productId: "prod-fries",
+    writeOffCategoryId: "woc-dropped",
     quantity: 2,
-    deductionType: "employee",
-    chargedEmployeeId: "usr_emp_saule",
+    deductionMode: "employee",
+    deductionEmployeeId: "usr_emp_saule",
     comment: "Fries portion dropped on the floor while plating an order.",
-    photoDataUrl: PHOTO,
     status: "approved",
     reviewerId: "usr_reviewer_marat",
     reviewComment: "Confirmed, minor amount.",
@@ -178,14 +287,15 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0005",
+    requestNumber: "WO-0005",
     submitterId: "usr_emp_aigerim",
-    locationId: "abai",
-    productType: "patty",
+    pointOfSaleId: "pos-abai",
+    productId: "prod-patty",
+    writeOffCategoryId: "woc-dropped",
     quantity: 1,
-    deductionType: "company",
-    chargedEmployeeId: null,
+    deductionMode: "none",
+    deductionEmployeeId: null,
     comment: "Patty fell during assembly, cannot be used per sanitary rules.",
-    photoDataUrl: PHOTO,
     status: "approved",
     reviewerId: "usr_reviewer_dana",
     reviewComment: "Sanitary write-off accepted.",
@@ -196,14 +306,15 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0006",
+    requestNumber: "WO-0006",
     submitterId: "usr_emp_daulet",
-    locationId: "mega-almaty",
-    productType: "tomatoes",
+    pointOfSaleId: "pos-mega",
+    productId: "prod-tomato",
+    writeOffCategoryId: "woc-spoiled",
     quantity: 6,
-    deductionType: "company",
-    chargedEmployeeId: null,
+    deductionMode: "none",
+    deductionEmployeeId: null,
     comment: "Sliced tomatoes left out too long, no longer meet standards.",
-    photoDataUrl: PHOTO,
     status: "pending",
     reviewerId: null,
     reviewComment: null,
@@ -214,14 +325,15 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0007",
+    requestNumber: "WO-0007",
     submitterId: "usr_emp_nurlan",
-    locationId: "dostyk-plaza",
-    productType: "bun",
+    pointOfSaleId: "pos-dostyk",
+    productId: "prod-bun",
+    writeOffCategoryId: "woc-expired",
     quantity: 4,
-    deductionType: "company",
-    chargedEmployeeId: null,
+    deductionMode: "none",
+    deductionEmployeeId: null,
     comment: "Buns went stale overnight, the bag was left open by mistake.",
-    photoDataUrl: PHOTO,
     status: "pending",
     reviewerId: null,
     reviewComment: null,
@@ -232,14 +344,15 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0008",
+    requestNumber: "WO-0008",
     submitterId: "usr_emp_saule",
-    locationId: "airport",
-    productType: "other",
-    quantity: 1,
-    deductionType: "employee",
-    chargedEmployeeId: "usr_emp_saule",
+    pointOfSaleId: "pos-airport",
+    productId: "prod-shake",
+    writeOffCategoryId: "woc-other",
+    quantity: 1.5,
+    deductionMode: "employee",
+    deductionEmployeeId: "usr_emp_saule",
     comment: "Milkshake mix spilled when the lid was not secured properly.",
-    photoDataUrl: PHOTO,
     status: "pending",
     reviewerId: null,
     reviewComment: null,
@@ -250,14 +363,15 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0009",
+    requestNumber: "WO-0009",
     submitterId: "usr_emp_aigerim",
-    locationId: "abai",
-    productType: "fries",
+    pointOfSaleId: "pos-abai",
+    productId: "prod-fries",
+    writeOffCategoryId: "woc-overcooked",
     quantity: 3,
-    deductionType: "company",
-    chargedEmployeeId: null,
+    deductionMode: "none",
+    deductionEmployeeId: null,
     comment: "Fryer oil overheated and burnt a full basket of fries.",
-    photoDataUrl: PHOTO,
     status: "pending",
     reviewerId: null,
     reviewComment: null,
@@ -268,14 +382,15 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0010",
+    requestNumber: "WO-0010",
     submitterId: "usr_emp_daulet",
-    locationId: "mega-almaty",
-    productType: "patty",
+    pointOfSaleId: "pos-mega",
+    productId: "prod-patty",
+    writeOffCategoryId: "woc-overcooked",
     quantity: 2,
-    deductionType: "employee",
-    chargedEmployeeId: "usr_emp_daulet",
+    deductionMode: "employee",
+    deductionEmployeeId: "usr_emp_daulet",
     comment: "Two patties left on the grill too long and dried out completely.",
-    photoDataUrl: PHOTO,
     status: "pending",
     reviewerId: null,
     reviewComment: null,

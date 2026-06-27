@@ -1,7 +1,8 @@
+import { expo } from "@better-auth/expo"
 import { env } from "cloudflare:workers"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { emailOTP } from "better-auth/plugins"
+import { emailOTP, username } from "better-auth/plugins"
 import type { AnyD1Database } from "drizzle-orm/d1"
 
 import {
@@ -78,8 +79,16 @@ function createAuth() {
     secret,
     appName: "Burgeri Ops",
     baseURL: url,
+    // Required by the username plugin (employee табельный + password) and used
+    // when an admin provisions employee logins server-side.
+    emailAndPassword: { enabled: true },
+    // The mobile app (scheme `burgeri`) signs in with the better-auth expo
+    // client and replays the session cookie; trust its custom-scheme origins.
+    trustedOrigins: ["burgeri://", "burgeri://*"],
     ...(socialProviders && { socialProviders }),
     plugins: [
+      expo(),
+      username(),
       emailOTP({
         otpLength: 6,
         expiresIn: 300,

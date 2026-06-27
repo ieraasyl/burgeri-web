@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/review/write-offs", label: "Reviewer queue" },
-  { href: "/write-offs", label: "Submit" },
 ] as const
 
 function useHideOnScroll() {
@@ -259,18 +258,9 @@ function SessionAuthControls() {
 
 function GuestAuthControls() {
   return (
-    <>
-      <Link
-        to="/sign-in"
-        className={buttonVariants({ variant: "outline", size: "sm" })}
-      >
-        Sign in
-      </Link>
-      <Link to="/write-offs" className={buttonVariants({ size: "sm" })}>
-        <span className="hidden sm:inline">New write-off</span>
-        <span className="sm:hidden">New</span>
-      </Link>
-    </>
+    <Link to="/sign-in" className={buttonVariants({ size: "sm" })}>
+      Sign in
+    </Link>
   )
 }
 
@@ -302,23 +292,14 @@ function MobileAuthControls({ onNavigate }: { onNavigate: () => void }) {
 
   if (!session) {
     return (
-      <>
-        <Link
-          to="/sign-in"
-          className="flex flex-row-reverse items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          onClick={onNavigate}
-        >
-          <IconUserCircle />
-          Sign in
-        </Link>
-        <Link
-          to="/write-offs"
-          className="flex flex-row-reverse items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-muted"
-          onClick={onNavigate}
-        >
-          New write-off
-        </Link>
-      </>
+      <Link
+        to="/sign-in"
+        className="flex flex-row-reverse items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        onClick={onNavigate}
+      >
+        <IconUserCircle />
+        Sign in
+      </Link>
     )
   }
 

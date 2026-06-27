@@ -7,7 +7,6 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "pnpm build && pnpm wrangler deploy",
-    "auth:generate": "better-auth generate --config ./src/lib/auth.ts --output src/db/auth-schema.ts -y",
     "db:generate": "drizzle-kit generate",
     "db:studio:local": "drizzle-kit studio --config drizzle.config.local.ts",
     "db:studio:remote": "drizzle-kit studio",
@@ -24,6 +23,7 @@
   "dependencies": {
     "@base-ui/react": "^1.5.0",
     "@better-auth/drizzle-adapter": "^1.6.18",
+    "@better-auth/expo": "^1.6.18",
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@fontsource-variable/figtree": "^5.2.10",
     "@tabler/icons-react": "^3.44.0",
@@ -34,7 +34,7 @@
     "@tanstack/react-router-ssr-query": "latest",
     "@tanstack/react-start": "latest",
     "@tanstack/router-plugin": "latest",
-    "better-auth": "^1.6.18",
+    "better-auth": "^1.6.22",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
@@ -48,7 +48,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@better-auth/cli": "^1.4.21",
     "@cloudflare/vite-plugin": "^1.40.2",
     "@tanstack/devtools-vite": "latest",
     "@tanstack/eslint-config": "latest",

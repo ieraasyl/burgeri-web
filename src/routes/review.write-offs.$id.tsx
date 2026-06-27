@@ -4,6 +4,7 @@ import {
   IconClock,
   IconCloudUpload,
   IconLoader2,
+  IconPhoto,
   IconX,
 } from "@tabler/icons-react"
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
@@ -14,9 +15,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { reviewWriteOffRequest, syncWriteOffToIiko } from "@/lib/actions"
 import {
-  deductionTypeLabels,
+  deductionModeLabels,
+  formatQuantity,
   iikoSyncStatusLabels,
-  productTypeLabels,
   writeOffStatusLabels,
 } from "@/lib/write-offs"
 import type { WriteOffStatus } from "@/lib/write-offs"
@@ -47,9 +48,6 @@ function WriteOffDetailPage() {
     return (
       <div className="rounded-2xl border border-dashed p-10 text-center">
         <p className="font-medium">Request not found</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          It may have been removed.
-        </p>
         <Link
           to="/review/write-offs"
           className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
@@ -112,40 +110,53 @@ function WriteOffDetailPage() {
 
       <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
         <section>
-          <a href={request.photoDataUrl} target="_blank" rel="noreferrer">
-            <img
-              src={request.photoDataUrl}
-              alt="Write-off evidence"
-              className="aspect-square w-full rounded-2xl border object-cover"
-            />
-          </a>
+          {request.photoUrl ? (
+            <a href={request.photoUrl} target="_blank" rel="noreferrer">
+              <img
+                src={request.photoUrl}
+                alt="Write-off evidence"
+                className="aspect-square w-full rounded-2xl border object-cover"
+              />
+            </a>
+          ) : (
+            <div className="grid aspect-square w-full place-items-center rounded-2xl border border-dashed text-muted-foreground">
+              <IconPhoto className="size-10" />
+            </div>
+          )}
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Open full-size evidence in a new tab
+            {request.requestNumber}
           </p>
         </section>
 
         <section className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-heading text-2xl font-semibold">
-              {productTypeLabels[request.productType]} · {request.quantity}
+              {request.productName} ·{" "}
+              {formatQuantity(request.quantity, request.unit)}
             </h2>
             <StatusBadge status={request.status} />
           </div>
-          <p className="mt-1 text-muted-foreground">{request.locationName}</p>
+          <p className="mt-1 text-muted-foreground">
+            {request.pointOfSaleName} · {request.categoryName}
+          </p>
 
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
             <DetailRow
               label="Submitted by"
               value={request.submitter?.name ?? "Unknown"}
-              sub={request.submitter?.email}
+              sub={request.submitter?.employeeId ?? undefined}
             />
             <DetailRow
               label="Submitted at"
               value={formatDate(request.createdAt)}
             />
             <DetailRow
+              label="Write-off category"
+              value={request.writeOffCategoryName}
+            />
+            <DetailRow
               label="Deduction"
-              value={deductionTypeLabels[request.deductionType]}
+              value={deductionModeLabels[request.deductionMode]}
               sub={request.chargedEmployee?.name ?? undefined}
             />
             <DetailRow
@@ -254,11 +265,9 @@ function IikoPanel({
         <div>
           <p className="text-sm font-medium">iiko write-off act</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {
-              iikoSyncStatusLabels[
-                syncStatus as keyof typeof iikoSyncStatusLabels
-              ]
-            }
+            {iikoSyncStatusLabels[
+              syncStatus as keyof typeof iikoSyncStatusLabels
+            ]}
             {documentId ? ` · ${documentId}` : ""}
           </p>
         </div>
