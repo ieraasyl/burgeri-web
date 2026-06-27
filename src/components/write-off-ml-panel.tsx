@@ -76,7 +76,10 @@ export function WriteOffMlPanel({
           </div>
 
           <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-            <MlDetail label="Категория" value={formatMlCategory(classification.category)} />
+            <MlDetail
+              label="Категория"
+              value={formatMlCategory(classification.category)}
+            />
             <MlDetail
               label="Ингредиент"
               value={formatMlFamily(classification.ingredientFamily)}

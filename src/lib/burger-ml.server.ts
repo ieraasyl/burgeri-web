@@ -15,7 +15,7 @@ const CLASSIFY_TIMEOUT_MS = 45_000
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"])
 
 function getMlBaseUrl() {
-  return env.BURGER_ML_URL?.replace(/\/$/, "") ?? ""
+  return env.BURGER_ML_URL.replace(/\/$/, "")
 }
 
 export function isBurgerMlConfigured() {
@@ -79,9 +79,7 @@ export async function classifyPhotoBuffer(input: {
   try {
     payload = JSON.parse(text) as BurgerMlApiResponse | { detail?: string }
   } catch {
-    throw new Error(
-      `ML service returned non-JSON (HTTP ${response.status}).`
-    )
+    throw new Error(`ML service returned non-JSON (HTTP ${response.status}).`)
   }
 
   if (!response.ok) {

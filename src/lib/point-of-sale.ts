@@ -20,7 +20,10 @@ export function sortCities(cities: Iterable<string>) {
   })
 }
 
-export function listPosByCity(pointsOfSale: readonly PosCatalogEntry[], city: string) {
+export function listPosByCity(
+  pointsOfSale: readonly PosCatalogEntry[],
+  city: string
+) {
   return pointsOfSale
     .filter((pos) => pos.city === city)
     .sort((a, b) => a.name.localeCompare(b.name, "ru"))

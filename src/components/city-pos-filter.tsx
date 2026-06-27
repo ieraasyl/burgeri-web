@@ -1,8 +1,5 @@
-import {
-  listPosByCity,
-  sortCities,
-  type PosCatalogEntry,
-} from "@/lib/point-of-sale"
+import { listPosByCity, sortCities } from "@/lib/point-of-sale"
+import type { PosCatalogEntry } from "@/lib/point-of-sale"
 
 interface CityPosFilterProps {
   pointsOfSale: readonly PosCatalogEntry[]

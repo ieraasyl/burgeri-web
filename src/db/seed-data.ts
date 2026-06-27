@@ -4,7 +4,10 @@ import type {
   writeOffDeductionModes,
   writeOffStatuses,
 } from "@/db/schema"
-import { demoStoreIds, seedPointsOfSale as importedPointsOfSale } from "@/db/seed-stores"
+import {
+  demoStoreIds,
+  seedPointsOfSale as importedPointsOfSale,
+} from "@/db/seed-stores"
 
 type UserRole = (typeof userRoles)[number]
 type DeductionMode = (typeof writeOffDeductionModes)[number]
@@ -422,7 +425,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     quantity: 3,
     deductionMode: "none",
     deductionEmployeeId: null,
-    comment: "Масло во фритюре перегрелось и сожгло целую корзину картофеля фри.",
+    comment:
+      "Масло во фритюре перегрелось и сожгло целую корзину картофеля фри.",
     status: "pending",
     reviewerId: null,
     reviewComment: null,
@@ -536,7 +540,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     quantity: 0.8,
     deductionMode: "none",
     deductionEmployeeId: null,
-    comment: "Смесь для коктейля просрочена — срок годности истёк вчера вечером.",
+    comment:
+      "Смесь для коктейля просрочена — срок годности истёк вчера вечером.",
     status: "pending",
     reviewerId: null,
     reviewComment: null,
@@ -577,7 +582,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     comment: "Две котлеты упали на пол при сборке комбо-набора.",
     status: "rejected",
     reviewerId: "usr_reviewer_marat",
-    reviewComment: "Недостаточно данных — укажите точное время и приложите фото.",
+    reviewComment:
+      "Недостаточно данных — укажите точное время и приложите фото.",
     reviewedAt: daysAgo(3, 11),
     iikoSyncStatus: "not_started",
     iikoDocumentId: null,

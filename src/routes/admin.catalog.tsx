@@ -551,9 +551,7 @@ function AdminCatalogPage() {
                                     type="number"
                                     min={0}
                                     step={1}
-                                    defaultValue={
-                                      product.unitCost ?? undefined
-                                    }
+                                    defaultValue={product.unitCost ?? undefined}
                                     placeholder="Не указана"
                                   />
                                   <ActiveCheckbox

@@ -257,9 +257,7 @@ function WriteOffReviewPage() {
               {visibleRequests.map((request) => {
                 const isPending = pendingIds.has(request.id)
                 const ml = request.mlClassification
-                const showMlPill = Boolean(
-                  ml && !ml.error && ml.confidence > 0
-                )
+                const showMlPill = Boolean(ml && !ml.error && ml.confidence > 0)
                 return (
                   <tr
                     key={request.id}

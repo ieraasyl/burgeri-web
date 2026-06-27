@@ -5,8 +5,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  type DragEndEvent,
 } from "@dnd-kit/core"
+import type { DragEndEvent } from "@dnd-kit/core"
 import {
   arrayMove,
   SortableContext,
@@ -209,7 +209,7 @@ function AnalyticsPage() {
               </p>
             </div>
             <div className="text-right">
-              <p className="font-heading text-2xl font-semibold tabular-nums text-amber-600 dark:text-amber-300">
+              <p className="font-heading text-2xl font-semibold text-amber-600 tabular-nums dark:text-amber-300">
                 {formatMoney(data.totalLoss)}
               </p>
               <Change value={lossChange} />
@@ -303,10 +303,7 @@ function AnalyticsPage() {
     ),
     summary: (
       <Panel>
-        <PanelHeader
-          title="Кратко"
-          subtitle="Что требует внимания ревьюера"
-        />
+        <PanelHeader title="Кратко" subtitle="Что требует внимания ревьюера" />
         <div className="mt-5 divide-y rounded-xl border">
           <SummaryRow
             label="На рассмотрении"
@@ -478,7 +475,7 @@ function SortableWidget({
             ref={setActivatorNodeRef}
             className={cn(
               "absolute top-4 left-0 flex size-6 -translate-x-full cursor-grab items-center justify-center rounded-md pr-1 text-muted-foreground transition-opacity hover:bg-muted/80 hover:text-foreground active:cursor-grabbing max-lg:translate-x-0",
-              "opacity-0 group-hover/widget:opacity-55 hover:!opacity-100",
+              "opacity-0 group-hover/widget:opacity-55 hover:opacity-100!",
               "focus-visible:opacity-100",
               "[@media(hover:none)]:opacity-45",
               isDragging && "cursor-grabbing bg-muted/80 opacity-100"
@@ -595,7 +592,7 @@ function TrendChart({
     <div className="mt-5 overflow-x-auto">
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="h-52 w-full min-w-[38rem]"
+        className="h-52 w-full min-w-152"
         role="img"
         aria-label={`${metricLabels[metric]} за ${rows.length} дн.`}
       >
@@ -696,7 +693,7 @@ function LossTrendChart({
     <div className="overflow-x-auto">
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="h-52 w-full min-w-[38rem]"
+        className="h-52 w-full min-w-152"
         role="img"
         aria-label={`Потери за ${rows.length} дн.`}
       >
@@ -807,7 +804,9 @@ function RankedRows({
   const max = Math.max(1, ...visible.map((row) => row.total))
 
   if (visible.length === 0) {
-    return <p className="py-8 text-sm text-muted-foreground">Пока нет данных.</p>
+    return (
+      <p className="py-8 text-sm text-muted-foreground">Пока нет данных.</p>
+    )
   }
 
   return (
@@ -839,7 +838,9 @@ function LossRankedRows({
   const max = Math.max(1, ...visible.map((row) => row.loss))
 
   if (visible.length === 0) {
-    return <p className="py-8 text-sm text-muted-foreground">Пока нет данных.</p>
+    return (
+      <p className="py-8 text-sm text-muted-foreground">Пока нет данных.</p>
+    )
   }
 
   return (
