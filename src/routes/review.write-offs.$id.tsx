@@ -82,6 +82,9 @@ function WriteOffDetailPage() {
     }
 
     await router.invalidate()
+    if ("iikoMessage" in result.data) {
+      setError(`Approved, but ${result.data.iikoMessage}`)
+    }
   }
 
   async function handleSync() {

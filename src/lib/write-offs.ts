@@ -30,6 +30,7 @@ export const writeOffStatusLabels: Record<WriteOffStatus, string> = {
 export const iikoSyncStatusLabels: Record<IikoSyncStatus, string> = {
   not_started: "Not started",
   queued: "Queued for iiko",
+  syncing: "Sending to iiko",
   synced: "Synced to iiko",
   failed: "iiko sync failed",
 }

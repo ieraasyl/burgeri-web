@@ -155,6 +155,22 @@ function WriteOffReviewPage() {
         current.map((row) => (row.id === request.id ? request : row))
       )
       setActionError(result.message)
+    } else {
+      setRequests((current) =>
+        current.map((row) =>
+          row.id === request.id
+            ? {
+                ...row,
+                status: result.data.status,
+                iikoSyncStatus: result.data.iikoSyncStatus,
+                iikoDocumentId: result.data.iikoDocumentId,
+              }
+            : row
+        )
+      )
+      if ("iikoMessage" in result.data) {
+        setActionError(`Approved, but ${result.data.iikoMessage}`)
+      }
     }
 
     setPendingIds((current) => {

@@ -13,13 +13,16 @@ import {
   writeOffRequest,
 } from "@/db/schema"
 import { actionError, actionOk } from "@/lib/action-result"
+import type { ActionResult } from "@/lib/action-result"
 import { getAuth } from "@/lib/auth.server"
 import { getServerDb } from "@/lib/db.server"
 import {
-  buildIikoWriteOffAct,
   createIikoWriteOffDocument,
+  getIikoWriteOffPreview,
+  IikoApiError,
 } from "@/lib/iiko.server"
 import { requireAdmin, requireReviewer } from "@/lib/user-context.server"
+import type { IikoSyncStatus, WriteOffStatus } from "@/lib/write-offs"
 import type {
   CreateEmployeeInput,
   ReviewWriteOffRequestInput,
@@ -51,7 +54,7 @@ export async function getWriteOffDetailData(requestId: string) {
 
   const iikoActPreview =
     request.status === "approved"
-      ? buildIikoWriteOffAct({
+      ? getIikoWriteOffPreview({
           requestId: request.id,
           requestNumber: request.requestNumber,
           storeId: request.pointOfSaleId,
@@ -69,48 +72,58 @@ export async function getWriteOffDetailData(requestId: string) {
   return { request, iikoActPreview }
 }
 
-export async function getWriteOffAnalyticsData() {
+export async function getWriteOffAnalyticsData(days: 7 | 14 | 30 = 14) {
   await requireReviewer("/review/analytics")
   const rows = await loadRequests()
+  const today = startOfUtcDay(new Date())
+  const currentStart = addUtcDays(today, -(days - 1))
+  const previousStart = addUtcDays(currentStart, -days)
+  const currentRows = rows.filter(
+    (row) => new Date(row.createdAt) >= currentStart
+  )
+  const previousRows = rows.filter((row) => {
+    const created = new Date(row.createdAt)
+    return created >= previousStart && created < currentStart
+  })
 
-  const byStatus = {
-    total: rows.length,
-    pending: rows.filter((row) => row.status === "pending").length,
-    approved: rows.filter((row) => row.status === "approved").length,
-    rejected: rows.filter((row) => row.status === "rejected").length,
-  }
+  const byStatus = summarizeStatuses(currentRows)
+  const previousByStatus = summarizeStatuses(previousRows)
 
   const byLocation = groupCount(
-    rows,
+    currentRows,
     (row) => row.pointOfSaleId,
     (row) => row.pointOfSaleName
   )
   const byProduct = groupCount(
-    rows,
+    currentRows,
     (row) => row.productId,
     (row) => row.productName
   )
   const byCategory = groupCount(
-    rows,
+    currentRows,
     (row) => row.writeOffCategoryId,
     (row) => row.writeOffCategoryName
   )
 
   const byDeduction = {
-    none: rows.filter((row) => row.deductionMode === "none").length,
-    employee: rows.filter((row) => row.deductionMode === "employee").length,
+    none: currentRows.filter((row) => row.deductionMode === "none").length,
+    employee: currentRows.filter((row) => row.deductionMode === "employee")
+      .length,
   }
 
   const iikoSync = {
-    not_started: rows.filter((row) => row.iikoSyncStatus === "not_started")
+    not_started: currentRows.filter(
+      (row) => row.iikoSyncStatus === "not_started"
+    ).length,
+    queued: currentRows.filter((row) => row.iikoSyncStatus === "queued").length,
+    syncing: currentRows.filter((row) => row.iikoSyncStatus === "syncing")
       .length,
-    queued: rows.filter((row) => row.iikoSyncStatus === "queued").length,
-    synced: rows.filter((row) => row.iikoSyncStatus === "synced").length,
-    failed: rows.filter((row) => row.iikoSyncStatus === "failed").length,
+    synced: currentRows.filter((row) => row.iikoSyncStatus === "synced").length,
+    failed: currentRows.filter((row) => row.iikoSyncStatus === "failed").length,
   }
 
   const topChargedEmployees = [
-    ...rows
+    ...currentRows
       .filter((row) => row.deductionMode === "employee" && row.chargedEmployee)
       .reduce((map, row) => {
         const employee = row.chargedEmployee!
@@ -127,29 +140,35 @@ export async function getWriteOffAnalyticsData() {
     .sort((a, b) => b.total - a.total)
     .slice(0, 8)
 
-  const days: Array<{ date: string; total: number }> = []
-  const start = startOfDay(new Date())
-  for (let offset = 13; offset >= 0; offset -= 1) {
-    const day = new Date(start)
-    day.setDate(day.getDate() - offset)
-    const next = new Date(day)
-    next.setDate(next.getDate() + 1)
-    const total = rows.filter((row) => {
+  const trend = []
+  for (let offset = 0; offset < days; offset += 1) {
+    const day = addUtcDays(currentStart, offset)
+    const next = addUtcDays(day, 1)
+    const dayRows = currentRows.filter((row) => {
       const created = new Date(row.createdAt)
       return created >= day && created < next
-    }).length
-    days.push({ date: day.toISOString().slice(0, 10), total })
+    })
+    trend.push({
+      date: day.toISOString().slice(0, 10),
+      ...summarizeStatuses(dayRows),
+    })
   }
 
   return {
+    period: {
+      days,
+      start: currentStart.toISOString(),
+      end: addUtcDays(today, 1).toISOString(),
+    },
     byStatus,
+    previousByStatus,
     byLocation,
     byProduct,
     byCategory,
     byDeduction,
     iikoSync,
     topChargedEmployees,
-    trend: days,
+    trend,
   }
 }
 
@@ -198,7 +217,7 @@ export async function getStaffDirectoryData() {
 
 export async function reviewWriteOffRequestAction(
   input: ReviewWriteOffRequestInput
-) {
+): Promise<ActionResult<ReviewWriteOffResult>> {
   const context = await requireReviewer("/review/write-offs")
   const db = getServerDb()
   const now = new Date()
@@ -226,13 +245,49 @@ export async function reviewWriteOffRequestAction(
     )
   }
 
-  return actionOk(requestRows[0])
+  if (input.status === "approved") {
+    const syncResult = await syncWriteOffToIiko(input.requestId)
+    if (syncResult.ok) {
+      return actionOk({
+        ...requestRows[0],
+        status: input.status,
+        iikoSyncStatus: syncResult.data.iikoSyncStatus,
+        iikoDocumentId: syncResult.data.iikoDocumentId,
+      })
+    }
+    return actionOk({
+      ...requestRows[0],
+      status: input.status,
+      iikoSyncStatus: "failed" as const,
+      iikoDocumentId: null,
+      iikoMessage: syncResult.message,
+    })
+  }
+
+  return actionOk({
+    ...requestRows[0],
+    status: input.status,
+    iikoSyncStatus: "not_started" as const,
+    iikoDocumentId: null,
+  })
+}
+
+interface ReviewWriteOffResult {
+  id: string
+  status: WriteOffStatus
+  iikoSyncStatus: IikoSyncStatus
+  iikoDocumentId: string | null
+  iikoMessage?: string
 }
 
 export async function syncWriteOffToIikoAction(input: SyncWriteOffToIikoInput) {
   await requireReviewer("/review/write-offs")
+  return syncWriteOffToIiko(input.requestId)
+}
+
+async function syncWriteOffToIiko(requestId: string) {
   const db = getServerDb()
-  const rows = await loadRequests(input.requestId)
+  const rows = await loadRequests(requestId)
   const request = rows.at(0)
 
   if (!request) {
@@ -244,21 +299,47 @@ export async function syncWriteOffToIikoAction(input: SyncWriteOffToIikoInput) {
   if (request.iikoSyncStatus === "synced") {
     return actionError("This request is already synced to iiko.")
   }
+  if (request.iikoSyncStatus === "syncing") {
+    return actionError("This request is already being sent to iiko.")
+  }
+
+  const claimed = await db
+    .update(writeOffRequest)
+    .set({ iikoSyncStatus: "syncing", updatedAt: new Date() })
+    .where(
+      and(
+        eq(writeOffRequest.id, request.id),
+        inArray(writeOffRequest.iikoSyncStatus, [
+          "not_started",
+          "queued",
+          "failed",
+        ])
+      )
+    )
+    .returning({ id: writeOffRequest.id })
+
+  if (claimed.length === 0) {
+    return actionError("This request is already being sent to iiko.")
+  }
 
   try {
-    const { documentId, payload } = await createIikoWriteOffDocument({
-      requestId: request.id,
-      requestNumber: request.requestNumber,
-      storeId: request.pointOfSaleId,
-      storeName: request.pointOfSaleName,
-      productId: request.productId,
-      productName: request.productName,
-      productSku: request.productSku,
-      quantity: request.quantity,
-      unit: request.unit,
-      comment: request.comment,
-      reviewedAt: request.reviewedAt ? new Date(request.reviewedAt) : null,
-    })
+    const { documentId, documentNumber, message, payload } =
+      await createIikoWriteOffDocument(
+        {
+          requestId: request.id,
+          requestNumber: request.requestNumber,
+          storeId: request.pointOfSaleId,
+          storeName: request.pointOfSaleName,
+          productId: request.productId,
+          productName: request.productName,
+          productSku: request.productSku,
+          quantity: request.quantity,
+          unit: request.unit,
+          comment: request.comment,
+          reviewedAt: request.reviewedAt ? new Date(request.reviewedAt) : null,
+        },
+        request.iikoDocumentId
+      )
 
     await db
       .update(writeOffRequest)
@@ -267,16 +348,41 @@ export async function syncWriteOffToIikoAction(input: SyncWriteOffToIikoInput) {
         iikoDocumentId: documentId,
         updatedAt: new Date(),
       })
-      .where(eq(writeOffRequest.id, request.id))
+      .where(
+        and(
+          eq(writeOffRequest.id, request.id),
+          eq(writeOffRequest.iikoSyncStatus, "syncing")
+        )
+      )
 
-    return actionOk({ documentId, payload })
+    return actionOk({
+      iikoSyncStatus: "synced" as const,
+      iikoDocumentId: documentId,
+      documentId,
+      documentNumber,
+      message,
+      payload,
+    })
   } catch (error) {
     console.error("Failed to sync write-off to iiko:", error)
+    const createdDocumentId =
+      error instanceof IikoApiError
+        ? (error.createdDocumentId ?? request.iikoDocumentId)
+        : request.iikoDocumentId
     await db
       .update(writeOffRequest)
-      .set({ iikoSyncStatus: "failed", updatedAt: new Date() })
-      .where(eq(writeOffRequest.id, request.id))
-    return actionError("iiko rejected the act. Try again in a moment.")
+      .set({
+        iikoSyncStatus: "failed",
+        iikoDocumentId: createdDocumentId,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(writeOffRequest.id, request.id),
+          eq(writeOffRequest.iikoSyncStatus, "syncing")
+        )
+      )
+    return actionError(getIikoErrorMessage(error))
   }
 }
 
@@ -521,10 +627,38 @@ function groupCount<T>(
   return [...map.values()].sort((a, b) => b.total - a.total)
 }
 
-function startOfDay(date: Date) {
+function summarizeStatuses<T extends { status: string }>(rows: T[]) {
+  return {
+    total: rows.length,
+    pending: rows.filter((row) => row.status === "pending").length,
+    approved: rows.filter((row) => row.status === "approved").length,
+    rejected: rows.filter((row) => row.status === "rejected").length,
+  }
+}
+
+function startOfUtcDay(date: Date) {
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  )
+}
+
+function addUtcDays(date: Date, days: number) {
   const copy = new Date(date)
-  copy.setHours(0, 0, 0, 0)
+  copy.setUTCDate(copy.getUTCDate() + days)
   return copy
+}
+
+function getIikoErrorMessage(error: unknown) {
+  if (error instanceof IikoApiError) {
+    if (error.status === 401) return "iiko authentication failed."
+    if (error.status === 403) return "iiko denied this inventory operation."
+    if (error.status === 429)
+      return "iiko is rate limiting requests. Try again shortly."
+    if (error.status === 0)
+      return "iiko could not be reached. Try again shortly."
+    return "iiko rejected the write-off. Review the integration logs."
+  }
+  return "iiko is not configured for this point of sale or product."
 }
 
 export type WriteOffReviewData = Awaited<

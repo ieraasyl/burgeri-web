@@ -40,9 +40,10 @@ React 19, TypeScript, TanStack Start + Router, Tailwind CSS v4, Better Auth
 (email/password for web, username/password + Expo cookies for mobile), Drizzle
 ORM, and Cloudflare Workers + D1.
 
-The iiko integration is a mock adapter ([`src/lib/iiko.server.ts`](./src/lib/iiko.server.ts))
-that builds a production-shaped write-off act and returns a document id; wire in
-real iiko Server API credentials to go live.
+The iiko integration ([`src/lib/iiko.server.ts`](./src/lib/iiko.server.ts)) uses
+the iikoCloud Inventory API to create and post approved write-off documents.
+Configure the server-only `IIKO_*` values documented in `.env.example`,
+including the Burgeri-to-iiko storage and product GUID maps.
 
 ## Local setup
 
@@ -65,11 +66,11 @@ real iiko Server API credentials to go live.
 `pnpm db:seed:local` creates staff, catalog data, password credentials, and ~10
 sample requests. Web reviewers sign in with email/password.
 
-| Email | Role |
-| --- | --- |
-| `admin@burgeri.kz` | admin |
+| Email                 | Role     |
+| --------------------- | -------- |
+| `admin@burgeri.kz`    | admin    |
 | `reviewer@burgeri.kz` | reviewer |
-| `manager@burgeri.kz` | reviewer |
+| `manager@burgeri.kz`  | reviewer |
 
 Seeded mobile employee logins use the employee id as username, for example
 `EMP-1001`. Seeded web and mobile passwords default to `Burgeri123!`. Override

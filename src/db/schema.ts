@@ -34,6 +34,7 @@ export const writeOffStatuses = ["pending", "approved", "rejected"] as const
 export const iikoSyncStatuses = [
   "not_started",
   "queued",
+  "syncing",
   "synced",
   "failed",
 ] as const

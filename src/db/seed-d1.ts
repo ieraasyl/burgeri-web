@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process"
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { join, resolve } from "node:path"
 
 import { hashPassword } from "better-auth/crypto"
 
@@ -235,11 +235,17 @@ try {
   writeFileSync(seedFile, statements.join("\n\n"))
 
   const result = spawnSync(
-    "pnpm",
-    ["wrangler", "d1", "execute", databaseName, mode, "--file", seedFile],
-    // `shell: true` lets Windows resolve the `pnpm.cmd` shim; without it
-    // spawnSync("pnpm", …) fails with ENOENT on Windows.
-    { stdio: "inherit", shell: true }
+    process.execPath,
+    [
+      resolve("node_modules/wrangler/bin/wrangler.js"),
+      "d1",
+      "execute",
+      databaseName,
+      mode,
+      "--file",
+      seedFile,
+    ],
+    { stdio: "inherit" }
   )
 
   process.exit(result.status ?? 1)
