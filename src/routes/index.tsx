@@ -1,85 +1,102 @@
-import { IconCalendarDue } from "@tabler/icons-react"
+import {
+  IconArrowRight,
+  IconCamera,
+  IconCircleCheck,
+  IconCloudUpload,
+} from "@tabler/icons-react"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { createServerFn } from "@tanstack/react-start"
 
 import { buttonVariants } from "@/components/ui/button"
-import { formatCategory, formatFormat } from "@/lib/catalog"
-
-const getHomeCatalog = createServerFn({ method: "GET" }).handler(async () => {
-  const { getHomeCatalogData } = await import("@/lib/catalog.server")
-  return getHomeCatalogData()
-})
 
 export const Route = createFileRoute("/")({
-  loader: () => getHomeCatalog(),
   component: HomePage,
 })
 
 function HomePage() {
-  const { opportunities } = Route.useLoaderData()
-  const featuredOpportunities = opportunities.slice(0, 4)
-
   return (
     <>
-      <section className="flex flex-1 items-center">
-        <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_29rem] lg:px-8 lg:py-16">
+      <section className="flex flex-1 items-center border-b">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_30rem] lg:px-8 lg:py-24">
           <div className="flex max-w-3xl flex-col justify-center">
-            <h1 className="font-heading text-4xl font-semibold tracking-normal text-balance sm:text-5xl lg:text-6xl">
-              Build a shortlist before the deadline.
+            <p className="text-sm font-medium text-primary">
+              Restaurant operations, without paper
+            </p>
+            <h1 className="mt-4 font-heading text-4xl font-semibold tracking-normal text-balance sm:text-5xl lg:text-6xl">
+              Record every loss while the evidence is fresh.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-              Compare olympiads, hackathons, summer schools, scholarships, and
-              self-paced courses with the grade range and next date visible from
-              the start.
+              Employees submit a photo-backed write-off from their phone.
+              Reviewers verify it in one queue, and approved records are
+              prepared for iiko.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/write-offs" className={buttonVariants({ size: "lg" })}>
+                Create a write-off
+                <IconArrowRight data-icon="inline-end" />
+              </Link>
               <Link
-                to="/opportunities"
-                className={buttonVariants({ size: "lg" })}
+                to="/review/write-offs"
+                className={buttonVariants({ variant: "outline", size: "lg" })}
               >
-                Find programs
+                Reviewer queue
               </Link>
             </div>
           </div>
 
-          <div className="deadline-panel">
-            <div className="flex items-center justify-between gap-4 border-b px-5 py-4">
-              <div>
-                <p className="text-sm font-medium">Next application dates</p>
-                <p className="text-xs text-muted-foreground">
-                  Sorted by deadline
-                </p>
-              </div>
-              <IconCalendarDue className="text-primary" />
-            </div>
-            <div className="deadline-rail">
-              {featuredOpportunities.map((opportunity) => (
-                <Link
-                  key={opportunity.id}
-                  to="/opportunities/$slug"
-                  params={{ slug: opportunity.slug }}
-                  className="deadline-rail-item"
-                >
-                  <span className="deadline-dot" aria-hidden="true" />
-                  <span className="flex min-w-0 flex-col gap-1">
-                    <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <span>{opportunity.deadlineShortLabel}</span>
-                      <span>{formatCategory(opportunity.category)}</span>
-                    </span>
-                    <span className="font-heading text-base leading-snug font-semibold">
-                      {opportunity.title}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {opportunity.gradeLabel} ·{" "}
-                      {formatFormat(opportunity.format)}
-                    </span>
-                  </span>
-                </Link>
-              ))}
+          <div className="rounded-3xl border bg-card p-5 shadow-sm sm:p-7">
+            <p className="text-sm font-medium">A clean three-step check-in</p>
+            <div className="mt-6 grid gap-5">
+              <Step
+                icon={<IconCamera />}
+                number="01"
+                title="Photograph"
+                text="Capture the damaged or unusable product at the restaurant."
+              />
+              <Step
+                icon={<IconCloudUpload />}
+                number="02"
+                title="Submit"
+                text="Choose the location and deduction type, then explain what happened."
+              />
+              <Step
+                icon={<IconCircleCheck />}
+                number="03"
+                title="Review"
+                text="A responsible employee approves or rejects the record with a full audit trail."
+              />
             </div>
           </div>
         </div>
       </section>
     </>
+  )
+}
+
+function Step({
+  icon,
+  number,
+  title,
+  text,
+}: {
+  icon: React.ReactNode
+  number: string
+  title: string
+  text: string
+}) {
+  return (
+    <div className="grid grid-cols-[2.5rem_1fr] gap-4">
+      <span className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
+        {icon}
+      </span>
+      <div>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-heading font-semibold">{title}</h2>
+          <span className="text-xs font-medium text-muted-foreground">
+            {number}
+          </span>
+        </div>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">{text}</p>
+      </div>
+    </div>
   )
 }

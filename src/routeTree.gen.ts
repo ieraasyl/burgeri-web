@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WriteOffsRouteImport } from './routes/write-offs'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -20,10 +21,16 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as CoursesIndexRouteImport } from './routes/courses.index'
+import { Route as ReviewWriteOffsRouteImport } from './routes/review.write-offs'
 import { Route as OpportunitiesSlugRouteImport } from './routes/opportunities.$slug'
 import { Route as CoursesSlugRouteImport } from './routes/courses.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
+const WriteOffsRoute = WriteOffsRouteImport.update({
+  id: '/write-offs',
+  path: '/write-offs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -79,6 +86,11 @@ const CoursesIndexRoute = CoursesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CoursesRoute,
 } as any)
+const ReviewWriteOffsRoute = ReviewWriteOffsRouteImport.update({
+  id: '/review/write-offs',
+  path: '/review/write-offs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OpportunitiesSlugRoute = OpportunitiesSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -105,8 +117,10 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/write-offs': typeof WriteOffsRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/opportunities/$slug': typeof OpportunitiesSlugRoute
+  '/review/write-offs': typeof ReviewWriteOffsRoute
   '/courses/': typeof CoursesIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -119,8 +133,10 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/write-offs': typeof WriteOffsRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/opportunities/$slug': typeof OpportunitiesSlugRoute
+  '/review/write-offs': typeof ReviewWriteOffsRoute
   '/courses': typeof CoursesIndexRoute
   '/opportunities': typeof OpportunitiesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -136,8 +152,10 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/write-offs': typeof WriteOffsRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/opportunities/$slug': typeof OpportunitiesSlugRoute
+  '/review/write-offs': typeof ReviewWriteOffsRoute
   '/courses/': typeof CoursesIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -154,8 +172,10 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sign-in'
     | '/terms'
+    | '/write-offs'
     | '/courses/$slug'
     | '/opportunities/$slug'
+    | '/review/write-offs'
     | '/courses/'
     | '/opportunities/'
     | '/api/auth/$'
@@ -168,8 +188,10 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sign-in'
     | '/terms'
+    | '/write-offs'
     | '/courses/$slug'
     | '/opportunities/$slug'
+    | '/review/write-offs'
     | '/courses'
     | '/opportunities'
     | '/api/auth/$'
@@ -184,8 +206,10 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sign-in'
     | '/terms'
+    | '/write-offs'
     | '/courses/$slug'
     | '/opportunities/$slug'
+    | '/review/write-offs'
     | '/courses/'
     | '/opportunities/'
     | '/api/auth/$'
@@ -201,11 +225,20 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SignInRoute: typeof SignInRoute
   TermsRoute: typeof TermsRoute
+  WriteOffsRoute: typeof WriteOffsRoute
+  ReviewWriteOffsRoute: typeof ReviewWriteOffsRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/write-offs': {
+      id: '/write-offs'
+      path: '/write-offs'
+      fullPath: '/write-offs'
+      preLoaderRoute: typeof WriteOffsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -283,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesIndexRouteImport
       parentRoute: typeof CoursesRoute
     }
+    '/review/write-offs': {
+      id: '/review/write-offs'
+      path: '/review/write-offs'
+      fullPath: '/review/write-offs'
+      preLoaderRoute: typeof ReviewWriteOffsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/opportunities/$slug': {
       id: '/opportunities/$slug'
       path: '/$slug'
@@ -344,6 +384,8 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SignInRoute: SignInRoute,
   TermsRoute: TermsRoute,
+  WriteOffsRoute: WriteOffsRoute,
+  ReviewWriteOffsRoute: ReviewWriteOffsRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

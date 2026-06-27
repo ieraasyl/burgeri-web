@@ -16,12 +16,11 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Mentoria Hub | Opportunities and Courses",
+        title: "Burgeri Ops | Product write-offs",
       },
       {
         name: "description",
-        content:
-          "Compare student opportunities, deadlines, and self-paced courses for grades 8-11.",
+        content: "Create, review, and track restaurant product write-offs.",
       },
     ],
     links: [

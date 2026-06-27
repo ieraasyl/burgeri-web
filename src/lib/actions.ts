@@ -11,9 +11,11 @@ import {
   adminUpsertLessonSchema,
   adminUpsertOpportunitySchema,
   completeOnboardingSchema,
+  createWriteOffRequestSchema,
   enrollCourseSchema,
   getZodFieldErrors,
   markLessonCompleteSchema,
+  reviewWriteOffRequestSchema,
   submitLessonQuizSchema,
   toggleSavedOpportunitySchema,
 } from "@/lib/validation"
@@ -25,8 +27,10 @@ import type {
   AdminUpsertLessonInput,
   AdminUpsertOpportunityInput,
   CompleteOnboardingInput,
+  CreateWriteOffRequestInput,
   EnrollCourseInput,
   MarkLessonCompleteInput,
+  ReviewWriteOffRequestInput,
   SubmitLessonQuizInput,
   ToggleSavedOpportunityInput,
 } from "@/lib/validation"
@@ -130,6 +134,26 @@ export const adminDeleteLesson = createServerFn({ method: "POST" })
     withValidation(adminDeleteLessonSchema, data, async (input) => {
       const { adminDeleteLessonAction } = await import("@/lib/actions.server")
       return adminDeleteLessonAction(input)
+    })
+  )
+
+export const createWriteOffRequest = createServerFn({ method: "POST" })
+  .validator((data: CreateWriteOffRequestInput) => data)
+  .handler(async ({ data }) =>
+    withValidation(createWriteOffRequestSchema, data, async (input) => {
+      const { createWriteOffRequestAction } =
+        await import("@/lib/write-offs.server")
+      return createWriteOffRequestAction(input)
+    })
+  )
+
+export const reviewWriteOffRequest = createServerFn({ method: "POST" })
+  .validator((data: ReviewWriteOffRequestInput) => data)
+  .handler(async ({ data }) =>
+    withValidation(reviewWriteOffRequestSchema, data, async (input) => {
+      const { reviewWriteOffRequestAction } =
+        await import("@/lib/write-offs.server")
+      return reviewWriteOffRequestAction(input)
     })
   )
 
