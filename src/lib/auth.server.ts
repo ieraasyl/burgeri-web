@@ -88,7 +88,11 @@ function createAuth() {
     ...(socialProviders && { socialProviders }),
     plugins: [
       expo(),
-      username(),
+      username({
+        minUsernameLength: 2,
+        maxUsernameLength: 40,
+        usernameValidator: (value) => /^[A-Za-z0-9_-]+$/.test(value),
+      }),
       emailOTP({
         otpLength: 6,
         expiresIn: 300,

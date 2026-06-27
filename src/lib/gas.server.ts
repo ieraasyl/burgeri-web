@@ -58,11 +58,15 @@ export async function uploadPhotoToDrive(input: {
   try {
     payload = JSON.parse(text)
   } catch {
-    throw new Error(`GAS returned a non-JSON response (HTTP ${response.status}).`)
+    throw new Error(
+      `GAS returned a non-JSON response (HTTP ${response.status}).`
+    )
   }
 
   if (!response.ok || !payload.fileId) {
-    throw new Error(payload.error || `GAS upload failed (HTTP ${response.status}).`)
+    throw new Error(
+      payload.error || `GAS upload failed (HTTP ${response.status}).`
+    )
   }
 
   return {

@@ -481,7 +481,8 @@ async function loadRequests(requestId?: string) {
       unit: productRow?.unit ?? "pcs",
       categoryName: productRow?.categoryName ?? "",
       pointOfSaleId: row.pointOfSaleId,
-      pointOfSaleName: posById.get(row.pointOfSaleId)?.name ?? row.pointOfSaleId,
+      pointOfSaleName:
+        posById.get(row.pointOfSaleId)?.name ?? row.pointOfSaleId,
       writeOffCategoryId: row.writeOffCategoryId,
       writeOffCategoryName:
         categoryById.get(row.writeOffCategoryId)?.name ?? "",

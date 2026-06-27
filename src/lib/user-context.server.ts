@@ -54,7 +54,7 @@ export async function requireReviewer(redirectTo = getCurrentPath()) {
   const context = await requireUser(redirectTo)
 
   if (context.profile.role !== "reviewer" && context.profile.role !== "admin") {
-    throw redirect({ to: "/write-offs" })
+    throw redirect({ to: "/" })
   }
 
   return context
@@ -64,7 +64,7 @@ export async function requireAdmin(redirectTo = getCurrentPath()) {
   const context = await requireUser(redirectTo)
 
   if (context.profile.role !== "admin") {
-    throw redirect({ to: "/write-offs" })
+    throw redirect({ to: "/review/write-offs" })
   }
 
   return context

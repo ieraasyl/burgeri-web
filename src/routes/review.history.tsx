@@ -10,7 +10,7 @@ import {
   formatQuantity,
   writeOffStatusLabels,
 } from "@/lib/write-offs"
-import type { WriteOffStatus } from "@/lib/write-offs"
+import type { WriteOffDeductionMode, WriteOffStatus } from "@/lib/write-offs"
 
 const getHistory = createServerFn({ method: "GET" }).handler(async () => {
   const { getWriteOffHistoryData } = await import("@/lib/write-offs.server")
@@ -33,8 +33,7 @@ function HistoryPage() {
   const [search, setSearch] = useState("")
 
   const locationOptions = useMemo(
-    () =>
-      uniqueOptions(requests, (r) => [r.pointOfSaleId, r.pointOfSaleName]),
+    () => uniqueOptions(requests, (r) => [r.pointOfSaleId, r.pointOfSaleName]),
     [requests]
   )
   const productOptions = useMemo(
@@ -119,7 +118,10 @@ function HistoryPage() {
             </label>
           </Field>
         </div>
-        <Button onClick={() => downloadCsv(visible)} disabled={visible.length === 0}>
+        <Button
+          onClick={() => downloadCsv(visible)}
+          disabled={visible.length === 0}
+        >
           <IconDownload data-icon="inline-start" />
           Export CSV
         </Button>
@@ -149,7 +151,9 @@ function HistoryPage() {
                 key={request.id}
                 className="border-b align-top last:border-0 hover:bg-muted/20"
               >
-                <td className="px-4 py-3 font-medium">{request.requestNumber}</td>
+                <td className="px-4 py-3 font-medium">
+                  {request.requestNumber}
+                </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {formatDate(request.createdAt)}
                 </td>
@@ -257,7 +261,7 @@ function downloadCsv(rows: HistoryRequest[]) {
       request.quantity,
       request.unit,
       request.writeOffCategoryName,
-      deductionModeLabels[request.deductionMode],
+      deductionModeLabels[request.deductionMode as WriteOffDeductionMode],
       request.chargedEmployee?.name ?? "",
       request.status,
       request.reviewer?.name ?? "",

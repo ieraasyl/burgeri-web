@@ -265,9 +265,11 @@ function IikoPanel({
         <div>
           <p className="text-sm font-medium">iiko write-off act</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {iikoSyncStatusLabels[
-              syncStatus as keyof typeof iikoSyncStatusLabels
-            ]}
+            {
+              iikoSyncStatusLabels[
+                syncStatus as keyof typeof iikoSyncStatusLabels
+              ]
+            }
             {documentId ? ` · ${documentId}` : ""}
           </p>
         </div>

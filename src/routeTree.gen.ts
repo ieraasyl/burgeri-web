@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WriteOffsRouteImport } from './routes/write-offs'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as ReviewRouteImport } from './routes/review'
@@ -23,13 +22,18 @@ import { Route as ReviewHistoryRouteImport } from './routes/review.history'
 import { Route as ReviewAnalyticsRouteImport } from './routes/review.analytics'
 import { Route as ReviewWriteOffsIndexRouteImport } from './routes/review.write-offs.index'
 import { Route as ReviewWriteOffsIdRouteImport } from './routes/review.write-offs.$id'
+import { Route as ApiMobileWriteOffRequestsRouteImport } from './routes/api/mobile/write-off-requests'
+import { Route as ApiMobileMeRouteImport } from './routes/api/mobile/me'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiMobileWriteOffRequestsMineRouteImport } from './routes/api/mobile/write-off-requests/mine'
+import { Route as ApiMobileWriteOffRequestsIdRouteImport } from './routes/api/mobile/write-off-requests/$id'
+import { Route as ApiMobileFilesWriteOffPhotoRouteImport } from './routes/api/mobile/files/write-off-photo'
+import { Route as ApiMobileCatalogWriteOffCategoriesRouteImport } from './routes/api/mobile/catalog/write-off-categories'
+import { Route as ApiMobileCatalogProductsRouteImport } from './routes/api/mobile/catalog/products'
+import { Route as ApiMobileCatalogProductCategoriesRouteImport } from './routes/api/mobile/catalog/product-categories'
+import { Route as ApiMobileCatalogPointsOfSaleRouteImport } from './routes/api/mobile/catalog/points-of-sale'
+import { Route as ApiMobileCatalogEmployeesRouteImport } from './routes/api/mobile/catalog/employees'
 
-const WriteOffsRoute = WriteOffsRouteImport.update({
-  id: '/write-offs',
-  path: '/write-offs',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -95,11 +99,70 @@ const ReviewWriteOffsIdRoute = ReviewWriteOffsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ReviewWriteOffsRoute,
 } as any)
+const ApiMobileWriteOffRequestsRoute =
+  ApiMobileWriteOffRequestsRouteImport.update({
+    id: '/api/mobile/write-off-requests',
+    path: '/api/mobile/write-off-requests',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMobileMeRoute = ApiMobileMeRouteImport.update({
+  id: '/api/mobile/me',
+  path: '/api/mobile/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMobileWriteOffRequestsMineRoute =
+  ApiMobileWriteOffRequestsMineRouteImport.update({
+    id: '/mine',
+    path: '/mine',
+    getParentRoute: () => ApiMobileWriteOffRequestsRoute,
+  } as any)
+const ApiMobileWriteOffRequestsIdRoute =
+  ApiMobileWriteOffRequestsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ApiMobileWriteOffRequestsRoute,
+  } as any)
+const ApiMobileFilesWriteOffPhotoRoute =
+  ApiMobileFilesWriteOffPhotoRouteImport.update({
+    id: '/api/mobile/files/write-off-photo',
+    path: '/api/mobile/files/write-off-photo',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMobileCatalogWriteOffCategoriesRoute =
+  ApiMobileCatalogWriteOffCategoriesRouteImport.update({
+    id: '/api/mobile/catalog/write-off-categories',
+    path: '/api/mobile/catalog/write-off-categories',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMobileCatalogProductsRoute =
+  ApiMobileCatalogProductsRouteImport.update({
+    id: '/api/mobile/catalog/products',
+    path: '/api/mobile/catalog/products',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMobileCatalogProductCategoriesRoute =
+  ApiMobileCatalogProductCategoriesRouteImport.update({
+    id: '/api/mobile/catalog/product-categories',
+    path: '/api/mobile/catalog/product-categories',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMobileCatalogPointsOfSaleRoute =
+  ApiMobileCatalogPointsOfSaleRouteImport.update({
+    id: '/api/mobile/catalog/points-of-sale',
+    path: '/api/mobile/catalog/points-of-sale',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMobileCatalogEmployeesRoute =
+  ApiMobileCatalogEmployeesRouteImport.update({
+    id: '/api/mobile/catalog/employees',
+    path: '/api/mobile/catalog/employees',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -109,14 +172,23 @@ export interface FileRoutesByFullPath {
   '/review': typeof ReviewRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
-  '/write-offs': typeof WriteOffsRoute
   '/review/analytics': typeof ReviewAnalyticsRoute
   '/review/history': typeof ReviewHistoryRoute
   '/review/write-offs': typeof ReviewWriteOffsRouteWithChildren
   '/review/': typeof ReviewIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/me': typeof ApiMobileMeRoute
+  '/api/mobile/write-off-requests': typeof ApiMobileWriteOffRequestsRouteWithChildren
   '/review/write-offs/$id': typeof ReviewWriteOffsIdRoute
   '/review/write-offs/': typeof ReviewWriteOffsIndexRoute
+  '/api/mobile/catalog/employees': typeof ApiMobileCatalogEmployeesRoute
+  '/api/mobile/catalog/points-of-sale': typeof ApiMobileCatalogPointsOfSaleRoute
+  '/api/mobile/catalog/product-categories': typeof ApiMobileCatalogProductCategoriesRoute
+  '/api/mobile/catalog/products': typeof ApiMobileCatalogProductsRoute
+  '/api/mobile/catalog/write-off-categories': typeof ApiMobileCatalogWriteOffCategoriesRoute
+  '/api/mobile/files/write-off-photo': typeof ApiMobileFilesWriteOffPhotoRoute
+  '/api/mobile/write-off-requests/$id': typeof ApiMobileWriteOffRequestsIdRoute
+  '/api/mobile/write-off-requests/mine': typeof ApiMobileWriteOffRequestsMineRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -125,13 +197,22 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
-  '/write-offs': typeof WriteOffsRoute
   '/review/analytics': typeof ReviewAnalyticsRoute
   '/review/history': typeof ReviewHistoryRoute
   '/review': typeof ReviewIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/me': typeof ApiMobileMeRoute
+  '/api/mobile/write-off-requests': typeof ApiMobileWriteOffRequestsRouteWithChildren
   '/review/write-offs/$id': typeof ReviewWriteOffsIdRoute
   '/review/write-offs': typeof ReviewWriteOffsIndexRoute
+  '/api/mobile/catalog/employees': typeof ApiMobileCatalogEmployeesRoute
+  '/api/mobile/catalog/points-of-sale': typeof ApiMobileCatalogPointsOfSaleRoute
+  '/api/mobile/catalog/product-categories': typeof ApiMobileCatalogProductCategoriesRoute
+  '/api/mobile/catalog/products': typeof ApiMobileCatalogProductsRoute
+  '/api/mobile/catalog/write-off-categories': typeof ApiMobileCatalogWriteOffCategoriesRoute
+  '/api/mobile/files/write-off-photo': typeof ApiMobileFilesWriteOffPhotoRoute
+  '/api/mobile/write-off-requests/$id': typeof ApiMobileWriteOffRequestsIdRoute
+  '/api/mobile/write-off-requests/mine': typeof ApiMobileWriteOffRequestsMineRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -142,14 +223,23 @@ export interface FileRoutesById {
   '/review': typeof ReviewRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
-  '/write-offs': typeof WriteOffsRoute
   '/review/analytics': typeof ReviewAnalyticsRoute
   '/review/history': typeof ReviewHistoryRoute
   '/review/write-offs': typeof ReviewWriteOffsRouteWithChildren
   '/review/': typeof ReviewIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/me': typeof ApiMobileMeRoute
+  '/api/mobile/write-off-requests': typeof ApiMobileWriteOffRequestsRouteWithChildren
   '/review/write-offs/$id': typeof ReviewWriteOffsIdRoute
   '/review/write-offs/': typeof ReviewWriteOffsIndexRoute
+  '/api/mobile/catalog/employees': typeof ApiMobileCatalogEmployeesRoute
+  '/api/mobile/catalog/points-of-sale': typeof ApiMobileCatalogPointsOfSaleRoute
+  '/api/mobile/catalog/product-categories': typeof ApiMobileCatalogProductCategoriesRoute
+  '/api/mobile/catalog/products': typeof ApiMobileCatalogProductsRoute
+  '/api/mobile/catalog/write-off-categories': typeof ApiMobileCatalogWriteOffCategoriesRoute
+  '/api/mobile/files/write-off-photo': typeof ApiMobileFilesWriteOffPhotoRoute
+  '/api/mobile/write-off-requests/$id': typeof ApiMobileWriteOffRequestsIdRoute
+  '/api/mobile/write-off-requests/mine': typeof ApiMobileWriteOffRequestsMineRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,14 +251,23 @@ export interface FileRouteTypes {
     | '/review'
     | '/sign-in'
     | '/terms'
-    | '/write-offs'
     | '/review/analytics'
     | '/review/history'
     | '/review/write-offs'
     | '/review/'
     | '/api/auth/$'
+    | '/api/mobile/me'
+    | '/api/mobile/write-off-requests'
     | '/review/write-offs/$id'
     | '/review/write-offs/'
+    | '/api/mobile/catalog/employees'
+    | '/api/mobile/catalog/points-of-sale'
+    | '/api/mobile/catalog/product-categories'
+    | '/api/mobile/catalog/products'
+    | '/api/mobile/catalog/write-off-categories'
+    | '/api/mobile/files/write-off-photo'
+    | '/api/mobile/write-off-requests/$id'
+    | '/api/mobile/write-off-requests/mine'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,13 +276,22 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sign-in'
     | '/terms'
-    | '/write-offs'
     | '/review/analytics'
     | '/review/history'
     | '/review'
     | '/api/auth/$'
+    | '/api/mobile/me'
+    | '/api/mobile/write-off-requests'
     | '/review/write-offs/$id'
     | '/review/write-offs'
+    | '/api/mobile/catalog/employees'
+    | '/api/mobile/catalog/points-of-sale'
+    | '/api/mobile/catalog/product-categories'
+    | '/api/mobile/catalog/products'
+    | '/api/mobile/catalog/write-off-categories'
+    | '/api/mobile/files/write-off-photo'
+    | '/api/mobile/write-off-requests/$id'
+    | '/api/mobile/write-off-requests/mine'
   id:
     | '__root__'
     | '/'
@@ -193,14 +301,23 @@ export interface FileRouteTypes {
     | '/review'
     | '/sign-in'
     | '/terms'
-    | '/write-offs'
     | '/review/analytics'
     | '/review/history'
     | '/review/write-offs'
     | '/review/'
     | '/api/auth/$'
+    | '/api/mobile/me'
+    | '/api/mobile/write-off-requests'
     | '/review/write-offs/$id'
     | '/review/write-offs/'
+    | '/api/mobile/catalog/employees'
+    | '/api/mobile/catalog/points-of-sale'
+    | '/api/mobile/catalog/product-categories'
+    | '/api/mobile/catalog/products'
+    | '/api/mobile/catalog/write-off-categories'
+    | '/api/mobile/files/write-off-photo'
+    | '/api/mobile/write-off-requests/$id'
+    | '/api/mobile/write-off-requests/mine'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -211,19 +328,19 @@ export interface RootRouteChildren {
   ReviewRoute: typeof ReviewRouteWithChildren
   SignInRoute: typeof SignInRoute
   TermsRoute: typeof TermsRoute
-  WriteOffsRoute: typeof WriteOffsRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiMobileMeRoute: typeof ApiMobileMeRoute
+  ApiMobileWriteOffRequestsRoute: typeof ApiMobileWriteOffRequestsRouteWithChildren
+  ApiMobileCatalogEmployeesRoute: typeof ApiMobileCatalogEmployeesRoute
+  ApiMobileCatalogPointsOfSaleRoute: typeof ApiMobileCatalogPointsOfSaleRoute
+  ApiMobileCatalogProductCategoriesRoute: typeof ApiMobileCatalogProductCategoriesRoute
+  ApiMobileCatalogProductsRoute: typeof ApiMobileCatalogProductsRoute
+  ApiMobileCatalogWriteOffCategoriesRoute: typeof ApiMobileCatalogWriteOffCategoriesRoute
+  ApiMobileFilesWriteOffPhotoRoute: typeof ApiMobileFilesWriteOffPhotoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/write-offs': {
-      id: '/write-offs'
-      path: '/write-offs'
-      fullPath: '/write-offs'
-      preLoaderRoute: typeof WriteOffsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -315,11 +432,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewWriteOffsIdRouteImport
       parentRoute: typeof ReviewWriteOffsRoute
     }
+    '/api/mobile/write-off-requests': {
+      id: '/api/mobile/write-off-requests'
+      path: '/api/mobile/write-off-requests'
+      fullPath: '/api/mobile/write-off-requests'
+      preLoaderRoute: typeof ApiMobileWriteOffRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/me': {
+      id: '/api/mobile/me'
+      path: '/api/mobile/me'
+      fullPath: '/api/mobile/me'
+      preLoaderRoute: typeof ApiMobileMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/write-off-requests/mine': {
+      id: '/api/mobile/write-off-requests/mine'
+      path: '/mine'
+      fullPath: '/api/mobile/write-off-requests/mine'
+      preLoaderRoute: typeof ApiMobileWriteOffRequestsMineRouteImport
+      parentRoute: typeof ApiMobileWriteOffRequestsRoute
+    }
+    '/api/mobile/write-off-requests/$id': {
+      id: '/api/mobile/write-off-requests/$id'
+      path: '/$id'
+      fullPath: '/api/mobile/write-off-requests/$id'
+      preLoaderRoute: typeof ApiMobileWriteOffRequestsIdRouteImport
+      parentRoute: typeof ApiMobileWriteOffRequestsRoute
+    }
+    '/api/mobile/files/write-off-photo': {
+      id: '/api/mobile/files/write-off-photo'
+      path: '/api/mobile/files/write-off-photo'
+      fullPath: '/api/mobile/files/write-off-photo'
+      preLoaderRoute: typeof ApiMobileFilesWriteOffPhotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/catalog/write-off-categories': {
+      id: '/api/mobile/catalog/write-off-categories'
+      path: '/api/mobile/catalog/write-off-categories'
+      fullPath: '/api/mobile/catalog/write-off-categories'
+      preLoaderRoute: typeof ApiMobileCatalogWriteOffCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/catalog/products': {
+      id: '/api/mobile/catalog/products'
+      path: '/api/mobile/catalog/products'
+      fullPath: '/api/mobile/catalog/products'
+      preLoaderRoute: typeof ApiMobileCatalogProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/catalog/product-categories': {
+      id: '/api/mobile/catalog/product-categories'
+      path: '/api/mobile/catalog/product-categories'
+      fullPath: '/api/mobile/catalog/product-categories'
+      preLoaderRoute: typeof ApiMobileCatalogProductCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/catalog/points-of-sale': {
+      id: '/api/mobile/catalog/points-of-sale'
+      path: '/api/mobile/catalog/points-of-sale'
+      fullPath: '/api/mobile/catalog/points-of-sale'
+      preLoaderRoute: typeof ApiMobileCatalogPointsOfSaleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/catalog/employees': {
+      id: '/api/mobile/catalog/employees'
+      path: '/api/mobile/catalog/employees'
+      fullPath: '/api/mobile/catalog/employees'
+      preLoaderRoute: typeof ApiMobileCatalogEmployeesRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -356,6 +543,22 @@ const ReviewRouteChildren: ReviewRouteChildren = {
 const ReviewRouteWithChildren =
   ReviewRoute._addFileChildren(ReviewRouteChildren)
 
+interface ApiMobileWriteOffRequestsRouteChildren {
+  ApiMobileWriteOffRequestsIdRoute: typeof ApiMobileWriteOffRequestsIdRoute
+  ApiMobileWriteOffRequestsMineRoute: typeof ApiMobileWriteOffRequestsMineRoute
+}
+
+const ApiMobileWriteOffRequestsRouteChildren: ApiMobileWriteOffRequestsRouteChildren =
+  {
+    ApiMobileWriteOffRequestsIdRoute: ApiMobileWriteOffRequestsIdRoute,
+    ApiMobileWriteOffRequestsMineRoute: ApiMobileWriteOffRequestsMineRoute,
+  }
+
+const ApiMobileWriteOffRequestsRouteWithChildren =
+  ApiMobileWriteOffRequestsRoute._addFileChildren(
+    ApiMobileWriteOffRequestsRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
@@ -364,8 +567,17 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewRoute: ReviewRouteWithChildren,
   SignInRoute: SignInRoute,
   TermsRoute: TermsRoute,
-  WriteOffsRoute: WriteOffsRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiMobileMeRoute: ApiMobileMeRoute,
+  ApiMobileWriteOffRequestsRoute: ApiMobileWriteOffRequestsRouteWithChildren,
+  ApiMobileCatalogEmployeesRoute: ApiMobileCatalogEmployeesRoute,
+  ApiMobileCatalogPointsOfSaleRoute: ApiMobileCatalogPointsOfSaleRoute,
+  ApiMobileCatalogProductCategoriesRoute:
+    ApiMobileCatalogProductCategoriesRoute,
+  ApiMobileCatalogProductsRoute: ApiMobileCatalogProductsRoute,
+  ApiMobileCatalogWriteOffCategoriesRoute:
+    ApiMobileCatalogWriteOffCategoriesRoute,
+  ApiMobileFilesWriteOffPhotoRoute: ApiMobileFilesWriteOffPhotoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

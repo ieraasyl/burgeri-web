@@ -150,7 +150,9 @@ export async function getMobileEmployees(context: MobileContext) {
 }
 
 function toMobileRequest(row: typeof writeOffRequest.$inferSelect) {
-  const photoUrl = row.photoUrl ?? (row.photoFileId ? drivePhotoUrl(row.photoFileId) : undefined)
+  const photoUrl =
+    row.photoUrl ??
+    (row.photoFileId ? drivePhotoUrl(row.photoFileId) : undefined)
   return {
     id: row.id,
     requestNumber: row.requestNumber,
@@ -201,10 +203,8 @@ export async function getMyWriteOff(context: MobileContext, id: string) {
 }
 
 async function generateRequestNumber(db: MobileContext["db"]) {
-  const [{ value }] = await db
-    .select({ value: count() })
-    .from(writeOffRequest)
-  return `WO-${String(value + 1).padStart(4, "0")}`
+  const [{ value }] = await db.select({ value: count() }).from(writeOffRequest)
+  return `WR-${String(value + 1).padStart(5, "0")}`
 }
 
 export async function submitWriteOff(
@@ -213,41 +213,48 @@ export async function submitWriteOff(
 ) {
   const { db } = context
 
-  const [productRow] = await db
+  const productRows = await db
     .select({ id: product.id })
     .from(product)
     .where(and(eq(product.id, input.productId), eq(product.isActive, true)))
     .limit(1)
+  const productRow = productRows.at(0)
   if (!productRow) {
     throw new MobileApiError("Выбранный продукт недоступен.", 400)
   }
 
-  const [posRow] = await db
+  const posRows = await db
     .select({ id: pointOfSale.id })
     .from(pointOfSale)
     .where(
-      and(eq(pointOfSale.id, input.pointOfSaleId), eq(pointOfSale.isActive, true))
+      and(
+        eq(pointOfSale.id, input.pointOfSaleId),
+        eq(pointOfSale.isActive, true)
+      )
     )
     .limit(1)
+  const posRow = posRows.at(0)
   if (!posRow) {
     throw new MobileApiError("Выбранная точка продаж недоступна.", 400)
   }
 
-  const [categoryRow] = await db
+  const categoryRows = await db
     .select({ id: writeOffCategory.id })
     .from(writeOffCategory)
     .where(eq(writeOffCategory.id, input.writeOffCategoryId))
     .limit(1)
+  const categoryRow = categoryRows.at(0)
   if (!categoryRow) {
     throw new MobileApiError("Выбранная категория недоступна.", 400)
   }
 
   if (input.deductionMode === "employee" && input.deductionEmployeeId) {
-    const [employeeRow] = await db
+    const employeeRows = await db
       .select({ id: user.id })
       .from(user)
       .where(eq(user.id, input.deductionEmployeeId))
       .limit(1)
+    const employeeRow = employeeRows.at(0)
     if (!employeeRow) {
       throw new MobileApiError("Выбранный сотрудник недоступен.", 400)
     }

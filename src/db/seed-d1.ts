@@ -3,6 +3,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
+import { hashPassword } from "better-auth/crypto"
+
 import {
   seedPointsOfSale,
   seedProductCategories,
@@ -17,13 +19,23 @@ const isRemote = process.argv.includes("--remote")
 const mode = isRemote ? "--remote" : "--local"
 
 const accountCreatedAt = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+const demoEmployeePassword = process.env.SEED_EMPLOYEE_PASSWORD ?? "Burgeri123!"
+const demoEmployeePasswordHash = await hashPassword(demoEmployeePassword)
+const seedCredentialUsers = seedUsers.filter((row) => row.username)
 
 const statements = [
   insertRows(
     "point_of_sale",
     ["id", "name", "address", "is_active", "created_at", "updated_at"],
     seedPointsOfSale,
-    (row) => [row.id, row.name, row.address, true, accountCreatedAt, accountCreatedAt],
+    (row) => [
+      row.id,
+      row.name,
+      row.address,
+      true,
+      accountCreatedAt,
+      accountCreatedAt,
+    ],
     ["id"],
     ["name", "address", "is_active"]
   ),
@@ -31,7 +43,13 @@ const statements = [
     "product_category",
     ["id", "name", "position", "created_at", "updated_at"],
     seedProductCategories,
-    (row) => [row.id, row.name, row.position, accountCreatedAt, accountCreatedAt],
+    (row) => [
+      row.id,
+      row.name,
+      row.position,
+      accountCreatedAt,
+      accountCreatedAt,
+    ],
     ["id"],
     ["name", "position"]
   ),
@@ -65,7 +83,13 @@ const statements = [
     "write_off_category",
     ["id", "name", "position", "created_at", "updated_at"],
     seedWriteOffCategories,
-    (row) => [row.id, row.name, row.position, accountCreatedAt, accountCreatedAt],
+    (row) => [
+      row.id,
+      row.name,
+      row.position,
+      accountCreatedAt,
+      accountCreatedAt,
+    ],
     ["id"],
     ["name", "position"]
   ),
@@ -94,6 +118,30 @@ const statements = [
     ],
     ["id"],
     ["name", "email", "email_verified", "username", "display_username"]
+  ),
+  insertRows(
+    "account",
+    [
+      "id",
+      "account_id",
+      "provider_id",
+      "user_id",
+      "password",
+      "created_at",
+      "updated_at",
+    ],
+    seedCredentialUsers,
+    (row) => [
+      `acct_${row.id}_credential`,
+      row.id,
+      "credential",
+      row.id,
+      demoEmployeePasswordHash,
+      accountCreatedAt,
+      accountCreatedAt,
+    ],
+    ["id"],
+    ["account_id", "provider_id", "user_id", "password"]
   ),
   insertRows(
     "staff_profile",

@@ -300,7 +300,8 @@ function WriteOffReviewPage() {
                         {request.submitter?.name ?? "Unknown user"}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {request.requestNumber} · {formatDate(request.createdAt)}
+                        {request.requestNumber} ·{" "}
+                        {formatDate(request.createdAt)}
                       </p>
                     </td>
                     <td className="px-4 py-4 text-muted-foreground">
@@ -418,9 +419,7 @@ function Evidence({ url }: { url: string | null }) {
       </span>
     )
   }
-  return (
-    <img src={url} alt="" className="size-16 rounded-lg object-cover" />
-  )
+  return <img src={url} alt="" className="size-16 rounded-lg object-cover" />
 }
 
 function StatCard({

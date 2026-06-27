@@ -3,9 +3,10 @@
 Web application for **reviewing** product write-off requests from Burgeri
 restaurants, based on [`Кейс Mentoria Hackathon.md`](./Кейс%20Mentoria%20Hackathon.md).
 
-Restaurant staff photograph a write-off and submit it (a dedicated employee
-mobile app is planned). Reviewers verify the evidence in one queue, approve or
-reject it, and approved acts are pushed to **iiko**.
+Restaurant staff photograph and submit write-offs from `burgeri-mobile`.
+Reviewers use this web app to verify the evidence in one queue, approve or
+reject requests, and push approved acts to **iiko**. This repo also owns the
+shared Better Auth, D1, and `/api/mobile/*` backend used by the mobile app.
 
 ## What the reviewer website does
 
@@ -19,23 +20,25 @@ reject it, and approved acts are pushed to **iiko**.
 - `/review/history` — filterable log of every request with **CSV export** for
   accounting.
 - `/admin` — staff & roles management (admin only).
-- `/write-offs` — the submission form (used for seeding/demo until the employee
-  mobile app ships).
+- `/api/mobile/*` — mobile app session, catalog, photo upload, and write-off
+  request endpoints.
 
 ## Roles
 
 Each user has one `staff_profile` role:
 
-- `employee` — submit write-offs from their restaurant.
-- `reviewer` — everything an employee can do, plus the reviewer workspace.
+- `employee` — submit write-offs from the Burgeri mobile app only.
+- `reviewer` — access the reviewer workspace.
 - `admin` — additionally manage staff roles at `/admin`.
 
-New sign-ins default to `employee`; an admin promotes reviewers from `/admin`.
+New sign-ins default to `employee`; an admin promotes reviewers and provisions
+employee mobile credentials from `/admin`.
 
 ## Tech
 
 React 19, TypeScript, TanStack Start + Router, Tailwind CSS v4, Better Auth
-(email OTP + optional Google), Drizzle ORM, and Cloudflare Workers + D1.
+(email OTP/Google for web, username/password + Expo cookies for mobile),
+Drizzle ORM, and Cloudflare Workers + D1.
 
 The iiko integration is a mock adapter ([`src/lib/iiko.server.ts`](./src/lib/iiko.server.ts))
 that builds a production-shaped write-off act and returns a document id; wire in
@@ -59,16 +62,20 @@ real iiko Server API credentials to go live.
 
 ### Seeded accounts
 
-`pnpm db:seed:local` creates staff and ~10 sample requests. Sign in with email
-OTP — when Google Apps Script email delivery is not configured the OTP is
-printed to the dev server console.
+`pnpm db:seed:local` creates staff, catalog data, mobile employee credentials,
+and ~10 sample requests. Web reviewers sign in with email OTP; when Google Apps
+Script email delivery is not configured the OTP is printed to the dev server
+console.
 
 | Email | Role |
 | --- | --- |
 | `admin@burgeri.kz` | admin |
 | `reviewer@burgeri.kz` | reviewer |
 | `manager@burgeri.kz` | reviewer |
-| `aigerim@burgeri.kz` … | employee |
+
+Seeded mobile employee logins use the employee id as username, for example
+`EMP-1001`, with password `Burgeri123!` by default. Override that seed password
+with `SEED_EMPLOYEE_PASSWORD` when running `pnpm db:seed:*`.
 
 ## Notes
 

@@ -211,7 +211,7 @@ function daysAgo(days: number, hour = 12) {
 export const seedWriteOffs: SeedWriteOff[] = [
   {
     id: "wo_0001",
-    requestNumber: "WO-0001",
+    requestNumber: "WR-00001",
     submitterId: "usr_emp_aigerim",
     pointOfSaleId: "pos-abai",
     productId: "prod-tomato",
@@ -230,7 +230,7 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0002",
-    requestNumber: "WO-0002",
+    requestNumber: "WR-00002",
     submitterId: "usr_emp_daulet",
     pointOfSaleId: "pos-mega",
     productId: "prod-patty",
@@ -249,7 +249,7 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0003",
-    requestNumber: "WO-0003",
+    requestNumber: "WR-00003",
     submitterId: "usr_emp_nurlan",
     pointOfSaleId: "pos-dostyk",
     productId: "prod-bun",
@@ -268,7 +268,7 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0004",
-    requestNumber: "WO-0004",
+    requestNumber: "WR-00004",
     submitterId: "usr_emp_saule",
     pointOfSaleId: "pos-airport",
     productId: "prod-fries",
@@ -287,7 +287,7 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0005",
-    requestNumber: "WO-0005",
+    requestNumber: "WR-00005",
     submitterId: "usr_emp_aigerim",
     pointOfSaleId: "pos-abai",
     productId: "prod-patty",
@@ -306,7 +306,7 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0006",
-    requestNumber: "WO-0006",
+    requestNumber: "WR-00006",
     submitterId: "usr_emp_daulet",
     pointOfSaleId: "pos-mega",
     productId: "prod-tomato",
@@ -325,7 +325,7 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0007",
-    requestNumber: "WO-0007",
+    requestNumber: "WR-00007",
     submitterId: "usr_emp_nurlan",
     pointOfSaleId: "pos-dostyk",
     productId: "prod-bun",
@@ -344,7 +344,7 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0008",
-    requestNumber: "WO-0008",
+    requestNumber: "WR-00008",
     submitterId: "usr_emp_saule",
     pointOfSaleId: "pos-airport",
     productId: "prod-shake",
@@ -363,7 +363,7 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0009",
-    requestNumber: "WO-0009",
+    requestNumber: "WR-00009",
     submitterId: "usr_emp_aigerim",
     pointOfSaleId: "pos-abai",
     productId: "prod-fries",
@@ -382,7 +382,7 @@ export const seedWriteOffs: SeedWriteOff[] = [
   },
   {
     id: "wo_0010",
-    requestNumber: "WO-0010",
+    requestNumber: "WR-00010",
     submitterId: "usr_emp_daulet",
     pointOfSaleId: "pos-mega",
     productId: "prod-patty",

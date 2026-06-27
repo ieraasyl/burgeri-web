@@ -25,7 +25,10 @@ export const submitWriteOffSchema = z
     pointOfSaleId: z.string().trim().min(1, "Choose a point of sale."),
     deductionMode: z.enum(writeOffDeductionModes),
     deductionEmployeeId: z.string().trim().nullable().optional(),
-    writeOffCategoryId: z.string().trim().min(1, "Choose a write-off category."),
+    writeOffCategoryId: z
+      .string()
+      .trim()
+      .min(1, "Choose a write-off category."),
     comment: z
       .string()
       .trim()

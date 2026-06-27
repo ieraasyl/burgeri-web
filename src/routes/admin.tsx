@@ -154,7 +154,11 @@ function AdminPage() {
           className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
           onSubmit={handleCreate}
         >
-          <LabelledInput label="Name" name="name" placeholder="Aigerim Satbek" />
+          <LabelledInput
+            label="Name"
+            name="name"
+            placeholder="Aigerim Satbek"
+          />
           <LabelledInput
             label="Табельный номер"
             name="employeeId"
@@ -187,7 +191,10 @@ function AdminPage() {
           <div className="sm:col-span-2 lg:col-span-4">
             <Button type="submit" disabled={creating}>
               {creating ? (
-                <IconLoader2 className="animate-spin" data-icon="inline-start" />
+                <IconLoader2
+                  className="animate-spin"
+                  data-icon="inline-start"
+                />
               ) : (
                 <IconUserPlus data-icon="inline-start" />
               )}

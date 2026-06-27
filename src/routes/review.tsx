@@ -2,13 +2,11 @@ import {
   IconChartBar,
   IconHistory,
   IconListCheck,
-  IconPlus,
   IconUsersGroup,
 } from "@tabler/icons-react"
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 
-import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const getReviewerNav = createServerFn({ method: "GET" }).handler(async () => {
@@ -33,7 +31,7 @@ function ReviewLayout() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <section className="flex flex-col gap-5 border-b pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <section className="border-b pb-6">
         <div>
           <p className="text-sm font-medium text-primary">Reviewer workspace</p>
           <h1 className="mt-2 font-heading text-4xl font-semibold text-balance">
@@ -44,13 +42,6 @@ function ReviewLayout() {
             iiko.
           </p>
         </div>
-        <Link
-          to="/write-offs"
-          className={buttonVariants({ variant: "outline" })}
-        >
-          <IconPlus data-icon="inline-start" />
-          Submit write-off
-        </Link>
       </section>
 
       <nav className="mt-6 flex flex-wrap gap-1">

@@ -20,7 +20,8 @@ export const Route = createRootRoute({
       },
       {
         name: "description",
-        content: "Create, review, and track restaurant product write-offs.",
+        content:
+          "Review, approve, and track restaurant product write-off requests.",
       },
     ],
     links: [

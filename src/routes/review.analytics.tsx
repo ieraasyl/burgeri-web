@@ -74,7 +74,9 @@ function AnalyticsPage() {
         />
 
         <section className="rounded-2xl border bg-card p-5">
-          <h2 className="font-heading text-lg font-semibold">Deduction split</h2>
+          <h2 className="font-heading text-lg font-semibold">
+            Deduction split
+          </h2>
           <div className="mt-4 flex flex-col gap-3">
             <BarRow
               label="No employee deduction"
@@ -109,8 +111,16 @@ function AnalyticsPage() {
           <h2 className="font-heading text-lg font-semibold">iiko sync</h2>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <SyncTile label="Not started" value={data.iikoSync.not_started} />
-            <SyncTile label="Queued" value={data.iikoSync.queued} tone="amber" />
-            <SyncTile label="Synced" value={data.iikoSync.synced} tone="green" />
+            <SyncTile
+              label="Queued"
+              value={data.iikoSync.queued}
+              tone="amber"
+            />
+            <SyncTile
+              label="Synced"
+              value={data.iikoSync.synced}
+              tone="green"
+            />
             <SyncTile label="Failed" value={data.iikoSync.failed} tone="red" />
           </div>
         </section>
@@ -136,12 +146,7 @@ function BarSection({
           <Empty />
         ) : (
           rows.map((row) => (
-            <BarRow
-              key={row.id}
-              label={row.name}
-              value={row.total}
-              max={max}
-            />
+            <BarRow key={row.id} label={row.name} value={row.total} max={max} />
           ))
         )}
       </div>

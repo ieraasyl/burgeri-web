@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { emailOTP } from "better-auth/plugins"
+import { emailOTP, username } from "better-auth/plugins"
 
 export const auth = betterAuth({
   // CLI-only config for schema generation; runtime uses auth.server.ts.
@@ -24,6 +24,11 @@ export const auth = betterAuth({
       async sendVerificationOTP() {
         // no-op: CLI-only config for schema generation
       },
+    }),
+    username({
+      minUsernameLength: 2,
+      maxUsernameLength: 40,
+      usernameValidator: (value) => /^[A-Za-z0-9_-]+$/.test(value),
     }),
   ],
 })
