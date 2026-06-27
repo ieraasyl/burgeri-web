@@ -18,7 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { signOut } from "@/lib/auth-client"
-import { getLocationName, userRoleLabels } from "@/lib/write-offs"
+import { userRoleLabels } from "@/lib/write-offs"
 
 const getAccountData = createServerFn({ method: "GET" }).handler(async () => {
   const { requireUser } = await import("@/lib/user-context.server")
@@ -28,9 +28,6 @@ const getAccountData = createServerFn({ method: "GET" }).handler(async () => {
     name: context.user.name,
     email: context.user.email,
     role: context.profile.role,
-    defaultLocationName: context.profile.defaultLocationId
-      ? getLocationName(context.profile.defaultLocationId)
-      : null,
   }
 })
 
@@ -71,20 +68,9 @@ function AccountPage() {
         <CardContent className="flex flex-col gap-6">
           <dl className="grid gap-4 sm:grid-cols-2">
             <ProfileRow label="Role" value={userRoleLabels[account.role]} />
-            <ProfileRow
-              label="Default restaurant"
-              value={account.defaultLocationName ?? "Not set"}
-            />
           </dl>
 
           <div className="flex flex-wrap gap-2">
-            <Link
-              to="/write-offs"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              <IconClipboardCheck data-icon="inline-start" />
-              Submit a write-off
-            </Link>
             {isReviewer && (
               <>
                 <Link

@@ -1,7 +1,14 @@
-import { eq } from "drizzle-orm"
+import { asc, eq } from "drizzle-orm"
 
 import type { AppDb } from "@/db"
-import { staffProfile } from "@/db/schema"
+import { user } from "@/db/auth-schema"
+import {
+  pointOfSale,
+  product,
+  productCategory,
+  staffProfile,
+  writeOffCategory,
+} from "@/db/schema"
 import type { userRoles } from "@/db/schema"
 
 export type UserRole = (typeof userRoles)[number]
@@ -46,4 +53,48 @@ export async function setStaffRole(
     })
 
   return getStaffProfile(db, input.userId)
+}
+
+export async function listProductCategories(db: AppDb) {
+  return db
+    .select()
+    .from(productCategory)
+    .orderBy(asc(productCategory.position), asc(productCategory.name))
+}
+
+export async function listProducts(db: AppDb) {
+  return db
+    .select()
+    .from(product)
+    .where(eq(product.isActive, true))
+    .orderBy(asc(product.name))
+}
+
+export async function listPointsOfSale(db: AppDb) {
+  return db
+    .select()
+    .from(pointOfSale)
+    .where(eq(pointOfSale.isActive, true))
+    .orderBy(asc(pointOfSale.name))
+}
+
+export async function listWriteOffCategories(db: AppDb) {
+  return db
+    .select()
+    .from(writeOffCategory)
+    .orderBy(asc(writeOffCategory.position), asc(writeOffCategory.name))
+}
+
+export async function listEmployees(db: AppDb) {
+  return db
+    .select({
+      id: user.id,
+      employeeId: user.username,
+      name: user.name,
+      role: staffProfile.role,
+    })
+    .from(user)
+    .innerJoin(staffProfile, eq(staffProfile.userId, user.id))
+    .where(eq(staffProfile.role, "employee"))
+    .orderBy(asc(user.name))
 }

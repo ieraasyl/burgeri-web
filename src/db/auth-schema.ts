@@ -9,6 +9,10 @@ export const user = sqliteTable("user", {
     .default(false)
     .notNull(),
   image: text("image"),
+  // better-auth username plugin — employees sign in to the mobile app with
+  // their табельный номер (stored as `username`).
+  username: text("username").unique(),
+  displayUsername: text("display_username"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),

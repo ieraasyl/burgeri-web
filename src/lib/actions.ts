@@ -4,28 +4,20 @@ import type { z } from "zod"
 import { actionError } from "@/lib/action-result"
 import type { ActionResult } from "@/lib/action-result"
 import {
-  createWriteOffRequestSchema,
+  createEmployeeSchema,
   getZodFieldErrors,
   reviewWriteOffRequestSchema,
+  setEmployeePasswordSchema,
   setStaffRoleSchema,
   syncWriteOffToIikoSchema,
 } from "@/lib/validation"
 import type {
-  CreateWriteOffRequestInput,
+  CreateEmployeeInput,
   ReviewWriteOffRequestInput,
+  SetEmployeePasswordInput,
   SetStaffRoleInput,
   SyncWriteOffToIikoInput,
 } from "@/lib/validation"
-
-export const createWriteOffRequest = createServerFn({ method: "POST" })
-  .validator((data: CreateWriteOffRequestInput) => data)
-  .handler(async ({ data }) =>
-    withValidation(createWriteOffRequestSchema, data, async (input) => {
-      const { createWriteOffRequestAction } =
-        await import("@/lib/write-offs.server")
-      return createWriteOffRequestAction(input)
-    })
-  )
 
 export const reviewWriteOffRequest = createServerFn({ method: "POST" })
   .validator((data: ReviewWriteOffRequestInput) => data)
@@ -53,6 +45,25 @@ export const setStaffRole = createServerFn({ method: "POST" })
     withValidation(setStaffRoleSchema, data, async (input) => {
       const { setStaffRoleAction } = await import("@/lib/write-offs.server")
       return setStaffRoleAction(input)
+    })
+  )
+
+export const createEmployee = createServerFn({ method: "POST" })
+  .validator((data: CreateEmployeeInput) => data)
+  .handler(async ({ data }) =>
+    withValidation(createEmployeeSchema, data, async (input) => {
+      const { createEmployeeAction } = await import("@/lib/write-offs.server")
+      return createEmployeeAction(input)
+    })
+  )
+
+export const setEmployeePassword = createServerFn({ method: "POST" })
+  .validator((data: SetEmployeePasswordInput) => data)
+  .handler(async ({ data }) =>
+    withValidation(setEmployeePasswordSchema, data, async (input) => {
+      const { setEmployeePasswordAction } =
+        await import("@/lib/write-offs.server")
+      return setEmployeePasswordAction(input)
     })
   )
 

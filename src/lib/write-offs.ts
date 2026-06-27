@@ -1,12 +1,14 @@
 import type {
   iikoSyncStatuses,
   userRoles,
-  writeOffDeductionTypes,
-  writeOffProductTypes,
+  writeOffDeductionModes,
   writeOffStatuses,
 } from "@/db/schema"
 
 export type UserRole = (typeof userRoles)[number]
+export type WriteOffStatus = (typeof writeOffStatuses)[number]
+export type WriteOffDeductionMode = (typeof writeOffDeductionModes)[number]
+export type IikoSyncStatus = (typeof iikoSyncStatuses)[number]
 
 export const userRoleLabels: Record<UserRole, string> = {
   employee: "Employee",
@@ -14,35 +16,8 @@ export const userRoleLabels: Record<UserRole, string> = {
   admin: "Admin",
 }
 
-export const restaurantLocations = [
-  { id: "abai", name: "Burgeri · Abai" },
-  { id: "mega-almaty", name: "Burgeri · MEGA Almaty" },
-  { id: "dostyk-plaza", name: "Burgeri · Dostyk Plaza" },
-  { id: "airport", name: "Burgeri · Almaty Airport" },
-] as const
-export const restaurantLocationIds = [
-  "abai",
-  "mega-almaty",
-  "dostyk-plaza",
-  "airport",
-] as const
-
-export type RestaurantLocationId = (typeof restaurantLocations)[number]["id"]
-export type WriteOffProductType = (typeof writeOffProductTypes)[number]
-export type WriteOffDeductionType = (typeof writeOffDeductionTypes)[number]
-export type WriteOffStatus = (typeof writeOffStatuses)[number]
-export type IikoSyncStatus = (typeof iikoSyncStatuses)[number]
-
-export const productTypeLabels: Record<WriteOffProductType, string> = {
-  tomatoes: "Tomatoes",
-  patty: "Patty",
-  bun: "Bun",
-  fries: "Fries",
-  other: "Other product",
-}
-
-export const deductionTypeLabels: Record<WriteOffDeductionType, string> = {
-  company: "No employee deduction",
+export const deductionModeLabels: Record<WriteOffDeductionMode, string> = {
+  none: "No employee deduction",
   employee: "Deduct from employee",
 }
 
@@ -59,9 +34,17 @@ export const iikoSyncStatusLabels: Record<IikoSyncStatus, string> = {
   failed: "iiko sync failed",
 }
 
-export function getLocationName(locationId: string) {
-  return (
-    restaurantLocations.find((location) => location.id === locationId)?.name ??
-    locationId
-  )
+// Permissions advertised to the mobile app via /api/mobile/me.
+export const mobilePermissions = [
+  "writeoff.catalog.read",
+  "writeoff.photo.upload",
+  "writeoff.request.create",
+  "writeoff.request.read.own",
+] as const
+
+export function formatQuantity(quantity: number, unit?: string | null) {
+  const value = Number.isInteger(quantity)
+    ? String(quantity)
+    : quantity.toFixed(2).replace(/\.?0+$/, "")
+  return unit ? `${value} ${unit}` : value
 }

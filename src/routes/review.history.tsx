@@ -6,9 +6,8 @@ import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
-  deductionTypeLabels,
-  productTypeLabels,
-  restaurantLocations,
+  deductionModeLabels,
+  formatQuantity,
   writeOffStatusLabels,
 } from "@/lib/write-offs"
 import type { WriteOffStatus } from "@/lib/write-offs"
@@ -33,26 +32,32 @@ function HistoryPage() {
   const [product, setProduct] = useState("all")
   const [search, setSearch] = useState("")
 
+  const locationOptions = useMemo(
+    () =>
+      uniqueOptions(requests, (r) => [r.pointOfSaleId, r.pointOfSaleName]),
+    [requests]
+  )
+  const productOptions = useMemo(
+    () => uniqueOptions(requests, (r) => [r.productId, r.productName]),
+    [requests]
+  )
+
   const visible = useMemo(() => {
     const query = search.trim().toLocaleLowerCase()
     return requests.filter((request) => {
       if (status !== "all" && request.status !== status) return false
-      if (location !== "all" && request.locationId !== location) return false
-      if (product !== "all" && request.productType !== product) return false
+      if (location !== "all" && request.pointOfSaleId !== location) return false
+      if (product !== "all" && request.productId !== product) return false
       if (!query) return true
       return [
+        request.requestNumber,
         request.submitter?.name,
-        request.submitter?.email,
-        request.locationName,
+        request.submitter?.employeeId,
         request.comment,
         request.iikoDocumentId,
       ].some((value) => value?.toLocaleLowerCase().includes(query))
     })
   }, [requests, status, location, product, search])
-
-  function handleExport() {
-    downloadCsv(visible)
-  }
 
   return (
     <div>
@@ -74,14 +79,14 @@ function HistoryPage() {
               ))}
             </select>
           </Field>
-          <Field label="Restaurant">
+          <Field label="Point of sale">
             <select
               value={location}
               onChange={(event) => setLocation(event.target.value)}
               className={selectClass}
             >
-              <option value="all">All restaurants</option>
-              {restaurantLocations.map((row) => (
+              <option value="all">All points of sale</option>
+              {locationOptions.map((row) => (
                 <option key={row.id} value={row.id}>
                   {row.name}
                 </option>
@@ -95,9 +100,9 @@ function HistoryPage() {
               className={selectClass}
             >
               <option value="all">All products</option>
-              {Object.entries(productTypeLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
+              {productOptions.map((row) => (
+                <option key={row.id} value={row.id}>
+                  {row.name}
                 </option>
               ))}
             </select>
@@ -108,13 +113,13 @@ function HistoryPage() {
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Employee, note, doc id…"
+                placeholder="Number, employee, doc id…"
                 className="pl-9"
               />
             </label>
           </Field>
         </div>
-        <Button onClick={handleExport} disabled={visible.length === 0}>
+        <Button onClick={() => downloadCsv(visible)} disabled={visible.length === 0}>
           <IconDownload data-icon="inline-start" />
           Export CSV
         </Button>
@@ -125,16 +130,16 @@ function HistoryPage() {
       </p>
 
       <div className="mt-2 overflow-x-auto rounded-2xl border">
-        <table className="w-full min-w-[920px] text-left text-sm">
+        <table className="w-full min-w-[960px] text-left text-sm">
           <thead className="border-b bg-muted/40">
             <tr>
+              <Th>Number</Th>
               <Th>Submitted</Th>
               <Th>Employee</Th>
-              <Th>Restaurant</Th>
+              <Th>Point of sale</Th>
               <Th>Product</Th>
               <Th>Deduction</Th>
               <Th>Status</Th>
-              <Th>Reviewer</Th>
               <Th>iiko</Th>
             </tr>
           </thead>
@@ -144,27 +149,26 @@ function HistoryPage() {
                 key={request.id}
                 className="border-b align-top last:border-0 hover:bg-muted/20"
               >
+                <td className="px-4 py-3 font-medium">{request.requestNumber}</td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {formatDate(request.createdAt)}
                 </td>
                 <td className="px-4 py-3">{request.submitter?.name ?? "—"}</td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {request.locationName}
+                  {request.pointOfSaleName}
                 </td>
                 <td className="px-4 py-3">
-                  {productTypeLabels[request.productType]} · {request.quantity}
+                  {request.productName} ·{" "}
+                  {formatQuantity(request.quantity, request.unit)}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {deductionTypeLabels[request.deductionType]}
+                  {deductionModeLabels[request.deductionMode]}
                   {request.chargedEmployee
                     ? ` · ${request.chargedEmployee.name}`
                     : ""}
                 </td>
                 <td className="px-4 py-3">
                   {writeOffStatusLabels[request.status]}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {request.reviewer?.name ?? "—"}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {request.iikoDocumentId ?? request.iikoSyncStatus}
@@ -188,6 +192,20 @@ function HistoryPage() {
   )
 }
 
+function uniqueOptions(
+  requests: HistoryRequest[],
+  pick: (request: HistoryRequest) => [string, string]
+) {
+  const map = new Map<string, string>()
+  for (const request of requests) {
+    const [id, name] = pick(request)
+    map.set(id, name)
+  }
+  return [...map.entries()]
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+}
+
 function Field({
   label,
   children,
@@ -209,13 +227,15 @@ function Th({ children }: { children: React.ReactNode }) {
 
 function downloadCsv(rows: HistoryRequest[]) {
   const header = [
-    "id",
+    "request_number",
     "submitted_at",
     "employee_name",
-    "employee_email",
-    "restaurant",
+    "employee_id",
+    "point_of_sale",
     "product",
     "quantity",
+    "unit",
+    "write_off_category",
     "deduction",
     "charged_employee",
     "status",
@@ -228,16 +248,16 @@ function downloadCsv(rows: HistoryRequest[]) {
   ]
   const lines = rows.map((request) =>
     [
-      request.id,
+      request.requestNumber,
       request.createdAt,
       request.submitter?.name ?? "",
-      request.submitter?.email ?? "",
-      request.locationName,
-      productTypeLabels[request.productType as keyof typeof productTypeLabels],
+      request.submitter?.employeeId ?? "",
+      request.pointOfSaleName,
+      request.productName,
       request.quantity,
-      deductionTypeLabels[
-        request.deductionType as keyof typeof deductionTypeLabels
-      ],
+      request.unit,
+      request.writeOffCategoryName,
+      deductionModeLabels[request.deductionMode],
       request.chargedEmployee?.name ?? "",
       request.status,
       request.reviewer?.name ?? "",

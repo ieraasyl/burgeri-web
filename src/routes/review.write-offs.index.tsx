@@ -4,6 +4,7 @@ import {
   IconClock,
   IconExternalLink,
   IconLoader2,
+  IconPhoto,
   IconSearch,
   IconX,
 } from "@tabler/icons-react"
@@ -16,10 +17,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { reviewWriteOffRequest } from "@/lib/actions"
 import {
-  deductionTypeLabels,
+  deductionModeLabels,
+  formatQuantity,
   iikoSyncStatusLabels,
-  productTypeLabels,
-  restaurantLocations,
   writeOffStatusLabels,
 } from "@/lib/write-offs"
 import type { WriteOffStatus } from "@/lib/write-offs"
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/review/write-offs/")({
 
 type ReviewRequest = ReturnType<typeof Route.useLoaderData>["requests"][number]
 type StatusFilter = "all" | WriteOffStatus
-type SortKey = "createdAt" | "locationName" | "status"
+type SortKey = "createdAt" | "pointOfSaleName" | "status"
 
 function WriteOffReviewPage() {
   const initialData = Route.useLoaderData()
@@ -64,24 +64,24 @@ function WriteOffReviewPage() {
     [requests]
   )
 
-  const locationStats = useMemo(
-    () =>
-      restaurantLocations
-        .map((location) => {
-          const locationRequests = requests.filter(
-            (request) => request.locationId === location.id
-          )
-          return {
-            ...location,
-            total: locationRequests.length,
-            pending: locationRequests.filter(
-              (request) => request.status === "pending"
-            ).length,
-          }
-        })
-        .filter((location) => location.total > 0),
-    [requests]
-  )
+  const locationStats = useMemo(() => {
+    const map = new Map<
+      string,
+      { id: string; name: string; total: number; pending: number }
+    >()
+    for (const request of requests) {
+      const current = map.get(request.pointOfSaleId) ?? {
+        id: request.pointOfSaleId,
+        name: request.pointOfSaleName,
+        total: 0,
+        pending: 0,
+      }
+      current.total += 1
+      if (request.status === "pending") current.pending += 1
+      map.set(request.pointOfSaleId, current)
+    }
+    return [...map.values()].sort((a, b) => b.total - a.total)
+  }, [requests])
 
   const visibleRequests = useMemo(() => {
     const query = search.trim().toLocaleLowerCase()
@@ -93,10 +93,11 @@ function WriteOffReviewPage() {
         return true
       }
       return [
+        request.requestNumber,
         request.submitter?.name,
-        request.submitter?.email,
-        request.locationName,
-        productTypeLabels[request.productType],
+        request.submitter?.employeeId,
+        request.pointOfSaleName,
+        request.productName,
         request.comment,
       ].some((value) => value?.toLocaleLowerCase().includes(query))
     })
@@ -146,11 +147,7 @@ function WriteOffReviewPage() {
     )
 
     const result = await reviewRequest({
-      data: {
-        requestId: request.id,
-        status,
-        reviewComment,
-      },
+      data: { requestId: request.id, status, reviewComment },
     })
 
     if (!result.ok) {
@@ -180,12 +177,12 @@ function WriteOffReviewPage() {
         <div className="flex items-center gap-2">
           <IconBuildingStore className="text-primary" />
           <h2 className="font-heading text-lg font-semibold">
-            Restaurant check-in
+            Point-of-sale check-in
           </h2>
         </div>
         {locationStats.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">
-            No restaurants have submitted requests yet.
+            No points of sale have submitted requests yet.
           </p>
         ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -237,7 +234,7 @@ function WriteOffReviewPage() {
             <Input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search employee, restaurant, product…"
+              placeholder="Search number, employee, POS, product…"
               className="pl-9"
             />
           </label>
@@ -266,8 +263,8 @@ function WriteOffReviewPage() {
                   onSort={toggleSort}
                 />
                 <SortableHeader
-                  label="Restaurant"
-                  sortKey="locationName"
+                  label="Point of sale"
+                  sortKey="pointOfSaleName"
                   sort={sort}
                   onSort={toggleSort}
                 />
@@ -295,11 +292,7 @@ function WriteOffReviewPage() {
                         params={{ id: request.id }}
                         aria-label="Open request detail"
                       >
-                        <img
-                          src={request.photoDataUrl}
-                          alt=""
-                          className="size-16 rounded-lg object-cover"
-                        />
+                        <Evidence url={request.photoUrl} />
                       </Link>
                     </td>
                     <td className="px-4 py-4">
@@ -307,19 +300,20 @@ function WriteOffReviewPage() {
                         {request.submitter?.name ?? "Unknown user"}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {formatDate(request.createdAt)}
+                        {request.requestNumber} · {formatDate(request.createdAt)}
                       </p>
                     </td>
                     <td className="px-4 py-4 text-muted-foreground">
-                      {request.locationName}
+                      {request.pointOfSaleName}
                     </td>
                     <td className="max-w-72 px-4 py-4">
                       <p className="font-medium">
-                        {productTypeLabels[request.productType]} ·{" "}
-                        {request.quantity}
+                        {request.productName} ·{" "}
+                        {formatQuantity(request.quantity, request.unit)}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {deductionTypeLabels[request.deductionType]}
+                        {request.writeOffCategoryName} ·{" "}
+                        {deductionModeLabels[request.deductionMode]}
                         {request.chargedEmployee
                           ? ` · ${request.chargedEmployee.name}`
                           : ""}
@@ -413,6 +407,19 @@ function WriteOffReviewPage() {
         </div>
       </section>
     </div>
+  )
+}
+
+function Evidence({ url }: { url: string | null }) {
+  if (!url) {
+    return (
+      <span className="grid size-16 place-items-center rounded-lg bg-muted text-muted-foreground">
+        <IconPhoto className="size-6" />
+      </span>
+    )
+  }
+  return (
+    <img src={url} alt="" className="size-16 rounded-lg object-cover" />
   )
 }
 

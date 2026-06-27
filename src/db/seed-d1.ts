@@ -3,7 +3,14 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { seedUsers, seedWriteOffs } from "@/db/seed-data"
+import {
+  seedPointsOfSale,
+  seedProductCategories,
+  seedProducts,
+  seedUsers,
+  seedWriteOffCategories,
+  seedWriteOffs,
+} from "@/db/seed-data"
 
 const databaseName = process.env.D1_DATABASE_NAME ?? "burgeri-web-db"
 const isRemote = process.argv.includes("--remote")
@@ -13,46 +20,110 @@ const accountCreatedAt = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
 const statements = [
   insertRows(
+    "point_of_sale",
+    ["id", "name", "address", "is_active", "created_at", "updated_at"],
+    seedPointsOfSale,
+    (row) => [row.id, row.name, row.address, true, accountCreatedAt, accountCreatedAt],
+    ["id"],
+    ["name", "address", "is_active"]
+  ),
+  insertRows(
+    "product_category",
+    ["id", "name", "position", "created_at", "updated_at"],
+    seedProductCategories,
+    (row) => [row.id, row.name, row.position, accountCreatedAt, accountCreatedAt],
+    ["id"],
+    ["name", "position"]
+  ),
+  insertRows(
+    "product",
+    [
+      "id",
+      "category_id",
+      "name",
+      "sku",
+      "unit",
+      "is_active",
+      "created_at",
+      "updated_at",
+    ],
+    seedProducts,
+    (row) => [
+      row.id,
+      row.categoryId,
+      row.name,
+      row.sku,
+      row.unit,
+      true,
+      accountCreatedAt,
+      accountCreatedAt,
+    ],
+    ["id"],
+    ["category_id", "name", "sku", "unit", "is_active"]
+  ),
+  insertRows(
+    "write_off_category",
+    ["id", "name", "position", "created_at", "updated_at"],
+    seedWriteOffCategories,
+    (row) => [row.id, row.name, row.position, accountCreatedAt, accountCreatedAt],
+    ["id"],
+    ["name", "position"]
+  ),
+  insertRows(
     "user",
-    ["id", "name", "email", "email_verified", "created_at", "updated_at"],
+    [
+      "id",
+      "name",
+      "email",
+      "email_verified",
+      "username",
+      "display_username",
+      "created_at",
+      "updated_at",
+    ],
     seedUsers,
     (row) => [
       row.id,
       row.name,
       row.email,
       true,
+      row.username,
+      row.displayUsername,
       accountCreatedAt,
       accountCreatedAt,
     ],
     ["id"],
-    ["name", "email", "email_verified"]
+    ["name", "email", "email_verified", "username", "display_username"]
   ),
   insertRows(
     "staff_profile",
-    ["user_id", "role", "default_location_id", "created_at", "updated_at"],
+    ["user_id", "role", "default_point_of_sale_id", "created_at", "updated_at"],
     seedUsers,
     (row) => [
       row.id,
       row.role,
-      row.defaultLocationId,
+      row.defaultPointOfSaleId,
       accountCreatedAt,
       accountCreatedAt,
     ],
     ["user_id"],
-    ["role", "default_location_id"]
+    ["role", "default_point_of_sale_id"]
   ),
   insertRows(
     "write_off_request",
     [
       "id",
+      "request_number",
       "submitter_id",
-      "location_id",
-      "product_type",
+      "point_of_sale_id",
+      "product_id",
+      "write_off_category_id",
       "quantity",
-      "deduction_type",
-      "charged_employee_id",
+      "deduction_mode",
+      "deduction_employee_id",
       "comment",
-      "photo_data_url",
+      "photo_file_id",
+      "photo_url",
       "status",
       "reviewer_id",
       "review_comment",
@@ -65,14 +136,17 @@ const statements = [
     seedWriteOffs,
     (row) => [
       row.id,
+      row.requestNumber,
       row.submitterId,
-      row.locationId,
-      row.productType,
+      row.pointOfSaleId,
+      row.productId,
+      row.writeOffCategoryId,
       row.quantity,
-      row.deductionType,
-      row.chargedEmployeeId,
+      row.deductionMode,
+      row.deductionEmployeeId,
       row.comment,
-      row.photoDataUrl,
+      null,
+      null,
       row.status,
       row.reviewerId,
       row.reviewComment,
@@ -84,14 +158,15 @@ const statements = [
     ],
     ["id"],
     [
+      "request_number",
       "submitter_id",
-      "location_id",
-      "product_type",
+      "point_of_sale_id",
+      "product_id",
+      "write_off_category_id",
       "quantity",
-      "deduction_type",
-      "charged_employee_id",
+      "deduction_mode",
+      "deduction_employee_id",
       "comment",
-      "photo_data_url",
       "status",
       "reviewer_id",
       "review_comment",
@@ -111,7 +186,9 @@ try {
   const result = spawnSync(
     "pnpm",
     ["wrangler", "d1", "execute", databaseName, mode, "--file", seedFile],
-    { stdio: "inherit" }
+    // `shell: true` lets Windows resolve the `pnpm.cmd` shim; without it
+    // spawnSync("pnpm", …) fails with ENOENT on Windows.
+    { stdio: "inherit", shell: true }
   )
 
   process.exit(result.status ?? 1)

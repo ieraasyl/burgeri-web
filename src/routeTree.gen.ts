@@ -18,9 +18,9 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReviewIndexRouteImport } from './routes/review.index'
+import { Route as ReviewWriteOffsRouteImport } from './routes/review.write-offs'
 import { Route as ReviewHistoryRouteImport } from './routes/review.history'
 import { Route as ReviewAnalyticsRouteImport } from './routes/review.analytics'
-import { Route as ReviewWriteOffsRouteImport } from './routes/review.write-offs'
 import { Route as ReviewWriteOffsIndexRouteImport } from './routes/review.write-offs.index'
 import { Route as ReviewWriteOffsIdRouteImport } from './routes/review.write-offs.$id'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -70,6 +70,11 @@ const ReviewIndexRoute = ReviewIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ReviewRoute,
 } as any)
+const ReviewWriteOffsRoute = ReviewWriteOffsRouteImport.update({
+  id: '/write-offs',
+  path: '/write-offs',
+  getParentRoute: () => ReviewRoute,
+} as any)
 const ReviewHistoryRoute = ReviewHistoryRouteImport.update({
   id: '/history',
   path: '/history',
@@ -78,11 +83,6 @@ const ReviewHistoryRoute = ReviewHistoryRouteImport.update({
 const ReviewAnalyticsRoute = ReviewAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
-  getParentRoute: () => ReviewRoute,
-} as any)
-const ReviewWriteOffsRoute = ReviewWriteOffsRouteImport.update({
-  id: '/write-offs',
-  path: '/write-offs',
   getParentRoute: () => ReviewRoute,
 } as any)
 const ReviewWriteOffsIndexRoute = ReviewWriteOffsIndexRouteImport.update({
@@ -110,13 +110,13 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
   '/write-offs': typeof WriteOffsRoute
-  '/review/write-offs': typeof ReviewWriteOffsRouteWithChildren
   '/review/analytics': typeof ReviewAnalyticsRoute
   '/review/history': typeof ReviewHistoryRoute
+  '/review/write-offs': typeof ReviewWriteOffsRouteWithChildren
   '/review/': typeof ReviewIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/review/write-offs/$id': typeof ReviewWriteOffsIdRoute
   '/review/write-offs/': typeof ReviewWriteOffsIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -129,9 +129,9 @@ export interface FileRoutesByTo {
   '/review/analytics': typeof ReviewAnalyticsRoute
   '/review/history': typeof ReviewHistoryRoute
   '/review': typeof ReviewIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/review/write-offs/$id': typeof ReviewWriteOffsIdRoute
   '/review/write-offs': typeof ReviewWriteOffsIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,13 +143,13 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
   '/write-offs': typeof WriteOffsRoute
-  '/review/write-offs': typeof ReviewWriteOffsRouteWithChildren
   '/review/analytics': typeof ReviewAnalyticsRoute
   '/review/history': typeof ReviewHistoryRoute
+  '/review/write-offs': typeof ReviewWriteOffsRouteWithChildren
   '/review/': typeof ReviewIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/review/write-offs/$id': typeof ReviewWriteOffsIdRoute
   '/review/write-offs/': typeof ReviewWriteOffsIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -162,13 +162,13 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/terms'
     | '/write-offs'
-    | '/review/write-offs'
     | '/review/analytics'
     | '/review/history'
+    | '/review/write-offs'
     | '/review/'
+    | '/api/auth/$'
     | '/review/write-offs/$id'
     | '/review/write-offs/'
-    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -181,9 +181,9 @@ export interface FileRouteTypes {
     | '/review/analytics'
     | '/review/history'
     | '/review'
+    | '/api/auth/$'
     | '/review/write-offs/$id'
     | '/review/write-offs'
-    | '/api/auth/$'
   id:
     | '__root__'
     | '/'
@@ -194,13 +194,13 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/terms'
     | '/write-offs'
-    | '/review/write-offs'
     | '/review/analytics'
     | '/review/history'
+    | '/review/write-offs'
     | '/review/'
+    | '/api/auth/$'
     | '/review/write-offs/$id'
     | '/review/write-offs/'
-    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -280,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewIndexRouteImport
       parentRoute: typeof ReviewRoute
     }
+    '/review/write-offs': {
+      id: '/review/write-offs'
+      path: '/write-offs'
+      fullPath: '/review/write-offs'
+      preLoaderRoute: typeof ReviewWriteOffsRouteImport
+      parentRoute: typeof ReviewRoute
+    }
     '/review/history': {
       id: '/review/history'
       path: '/history'
@@ -292,13 +299,6 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/review/analytics'
       preLoaderRoute: typeof ReviewAnalyticsRouteImport
-      parentRoute: typeof ReviewRoute
-    }
-    '/review/write-offs': {
-      id: '/review/write-offs'
-      path: '/write-offs'
-      fullPath: '/review/write-offs'
-      preLoaderRoute: typeof ReviewWriteOffsRouteImport
       parentRoute: typeof ReviewRoute
     }
     '/review/write-offs/': {
@@ -326,29 +326,30 @@ declare module '@tanstack/react-router' {
 }
 
 interface ReviewWriteOffsRouteChildren {
-  ReviewWriteOffsIndexRoute: typeof ReviewWriteOffsIndexRoute
   ReviewWriteOffsIdRoute: typeof ReviewWriteOffsIdRoute
+  ReviewWriteOffsIndexRoute: typeof ReviewWriteOffsIndexRoute
 }
 
 const ReviewWriteOffsRouteChildren: ReviewWriteOffsRouteChildren = {
-  ReviewWriteOffsIndexRoute: ReviewWriteOffsIndexRoute,
   ReviewWriteOffsIdRoute: ReviewWriteOffsIdRoute,
+  ReviewWriteOffsIndexRoute: ReviewWriteOffsIndexRoute,
 }
 
-const ReviewWriteOffsRouteWithChildren =
-  ReviewWriteOffsRoute._addFileChildren(ReviewWriteOffsRouteChildren)
+const ReviewWriteOffsRouteWithChildren = ReviewWriteOffsRoute._addFileChildren(
+  ReviewWriteOffsRouteChildren,
+)
 
 interface ReviewRouteChildren {
-  ReviewWriteOffsRoute: typeof ReviewWriteOffsRouteWithChildren
   ReviewAnalyticsRoute: typeof ReviewAnalyticsRoute
   ReviewHistoryRoute: typeof ReviewHistoryRoute
+  ReviewWriteOffsRoute: typeof ReviewWriteOffsRouteWithChildren
   ReviewIndexRoute: typeof ReviewIndexRoute
 }
 
 const ReviewRouteChildren: ReviewRouteChildren = {
-  ReviewWriteOffsRoute: ReviewWriteOffsRouteWithChildren,
   ReviewAnalyticsRoute: ReviewAnalyticsRoute,
   ReviewHistoryRoute: ReviewHistoryRoute,
+  ReviewWriteOffsRoute: ReviewWriteOffsRouteWithChildren,
   ReviewIndexRoute: ReviewIndexRoute,
 }
 
