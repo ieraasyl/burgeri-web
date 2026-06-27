@@ -12,5 +12,8 @@ BETTER_AUTH_URL=http://localhost:3000
 # Leave blank if you are not testing photo upload from burgeri-mobile.
 GAS_URL=
 GAS_SECRET=
+
+# Optional — CLIP visual QC for write-off evidence photos
+BURGER_ML_URL=https://dakosh-burger-ml.hf.space
 # In the Apps Script project, set GAS_PHOTO_FOLDER_ID as a Script Property to
 # choose the Drive folder for uploaded write-off photos.

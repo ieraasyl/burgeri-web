@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/sqlite-core"
 
 import { user } from "@/db/auth-schema"
+import type { WriteOffMlClassification } from "@/lib/burger-ml"
 
 const timestampMs = (name: string) => integer(name, { mode: "timestamp_ms" })
 
@@ -138,6 +139,9 @@ export const writeOffRequest = sqliteTable(
       .default("not_started")
       .notNull(),
     iikoDocumentId: text("iiko_document_id"),
+    mlClassification: text("ml_classification", {
+      mode: "json",
+    }).$type<WriteOffMlClassification | null>(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

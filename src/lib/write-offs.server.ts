@@ -14,6 +14,10 @@ import {
 } from "@/db/schema"
 import { actionError, actionOk } from "@/lib/action-result"
 import { getAuth } from "@/lib/auth.server"
+import {
+  classifyAndPersistWriteOff,
+  classifyPendingWriteOffs,
+} from "@/lib/burger-ml.server"
 import { getServerDb } from "@/lib/db.server"
 import {
   buildIikoWriteOffAct,
@@ -34,10 +38,27 @@ import type {
 export async function getWriteOffReviewData() {
   await requireReviewer("/review/write-offs")
   const db = getServerDb()
-  const [requests, pointsOfSale] = await Promise.all([
+  const [initialRequests, pointsOfSale] = await Promise.all([
     loadRequests(),
     loadActivePosCatalog(db),
   ])
+
+  const pendingIds = initialRequests
+    .filter(
+      (request) =>
+        request.status === "pending" &&
+        request.photoUrl &&
+        (!request.mlClassification || request.mlClassification.error)
+    )
+    .map((request) => request.id)
+
+  if (pendingIds.length > 0) {
+    await classifyPendingWriteOffs(pendingIds)
+  }
+
+  const requests =
+    pendingIds.length > 0 ? await loadRequests() : initialRequests
+
   return { requests, pointsOfSale }
 }
 
@@ -53,6 +74,7 @@ export async function getWriteOffHistoryData() {
 
 export async function getWriteOffDetailData(requestId: string) {
   await requireReviewer(`/review/write-offs/${requestId}`)
+  await classifyAndPersistWriteOff(requestId)
   const rows = await loadRequests(requestId)
   const request = rows.at(0) ?? null
 
@@ -681,6 +703,7 @@ async function loadRequests(requestId?: string) {
       reviewComment: row.reviewComment,
       iikoSyncStatus: row.iikoSyncStatus,
       iikoDocumentId: row.iikoDocumentId,
+      mlClassification: row.mlClassification,
       createdAt: row.createdAt.toISOString(),
       reviewedAt: row.reviewedAt?.toISOString() ?? null,
     }

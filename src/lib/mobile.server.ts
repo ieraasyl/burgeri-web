@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only"
 
 import { and, count, desc, eq } from "drizzle-orm"
+import { waitUntil } from "cloudflare:workers"
 
 import { user } from "@/db/auth-schema"
 import {
@@ -18,6 +19,7 @@ import {
   writeOffRequest,
 } from "@/db/schema"
 import { getSession } from "@/lib/auth.server"
+import { classifyAndPersistWriteOff } from "@/lib/burger-ml.server"
 import { getServerDb } from "@/lib/db.server"
 import { drivePhotoUrl } from "@/lib/gas.server"
 import { mobilePermissions } from "@/lib/write-offs"
@@ -283,6 +285,10 @@ export async function submitWriteOff(
       photoUrl,
     })
     .returning()
+
+  if (inserted.photoFileId) {
+    waitUntil(classifyAndPersistWriteOff(inserted.id))
+  }
 
   return toMobileRequest(inserted)
 }

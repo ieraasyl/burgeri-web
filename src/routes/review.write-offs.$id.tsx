@@ -13,6 +13,7 @@ import { useState } from "react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { WriteOffMlPanel } from "@/components/write-off-ml-panel"
 import { reviewWriteOffRequest, syncWriteOffToIiko } from "@/lib/actions"
 import {
   deductionModeLabels,
@@ -126,6 +127,13 @@ function WriteOffDetailPage() {
           <p className="mt-2 text-center text-xs text-muted-foreground">
             {request.requestNumber}
           </p>
+
+          {request.mlClassification && (
+            <WriteOffMlPanel
+              classification={request.mlClassification}
+              productName={request.productName}
+            />
+          )}
         </section>
 
         <section className="min-w-0">

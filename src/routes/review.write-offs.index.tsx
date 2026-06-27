@@ -14,6 +14,7 @@ import { useMemo, useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { CityPosFilter } from "@/components/city-pos-filter"
+import { ConfidencePill } from "@/components/write-off-ml-panel"
 import { Input } from "@/components/ui/input"
 import { reviewWriteOffRequest } from "@/lib/actions"
 import { matchesCityPosFilter } from "@/lib/point-of-sale"
@@ -220,6 +221,7 @@ function WriteOffReviewPage() {
           <table className="w-full min-w-[1040px] text-left text-sm">
             <thead className="border-b bg-muted/40">
               <tr>
+                <th className="w-3 p-0" aria-label="Уверенность QC" />
                 <th className="px-4 py-3 font-medium">Фото</th>
                 <SortableHeader
                   label="Подано"
@@ -246,11 +248,23 @@ function WriteOffReviewPage() {
             <tbody>
               {visibleRequests.map((request) => {
                 const isPending = pendingIds.has(request.id)
+                const ml = request.mlClassification
+                const showMlPill = Boolean(
+                  ml && !ml.error && ml.confidence > 0
+                )
                 return (
                   <tr
                     key={request.id}
                     className="border-b align-top last:border-0 hover:bg-muted/20"
                   >
+                    <td className="w-3 px-1 py-4 align-middle">
+                      {showMlPill ? (
+                        <ConfidencePill
+                          confidence={ml!.confidence}
+                          className="mx-auto min-h-16"
+                        />
+                      ) : null}
+                    </td>
                     <td className="px-4 py-4">
                       <Link
                         to="/review/write-offs/$id"
@@ -361,7 +375,7 @@ function WriteOffReviewPage() {
               {visibleRequests.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-6 py-12 text-center text-muted-foreground"
                   >
                     Нет заявок по этим фильтрам.
