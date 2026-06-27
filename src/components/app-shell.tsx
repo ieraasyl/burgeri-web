@@ -1,4 +1,5 @@
 import {
+  IconBurger,
   IconLoader2,
   IconLogout,
   IconMenu2,
@@ -12,12 +13,8 @@ import type { ReactNode } from "react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { signOut, useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
-import logoUrl from "@/logo.svg"
 
-const navItems = [
-  { href: "/opportunities", label: "Opportunities" },
-  { href: "/courses", label: "Courses" },
-] as const
+const navItems = [{ href: "/write-offs", label: "Write-offs" }] as const
 
 function useHideOnScroll() {
   const [isHidden, setIsHidden] = useState(false)
@@ -77,18 +74,15 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex min-w-0 items-center gap-3">
-            <img
-              src={logoUrl}
-              alt=""
-              aria-hidden="true"
-              className="size-9 shrink-0"
-            />
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+              <IconBurger className="size-5" />
+            </span>
             <span className="flex min-w-0 flex-col leading-tight">
               <span className="font-heading text-base font-semibold">
-                Mentoria Hub
+                Burgeri Ops
               </span>
               <span className="hidden text-xs text-muted-foreground sm:block">
-                Courses and deadlines for grades 8-11
+                Fast, accountable write-offs
               </span>
             </span>
           </Link>
@@ -269,9 +263,9 @@ function GuestAuthControls() {
       >
         Sign in
       </Link>
-      <Link to="/opportunities" className={buttonVariants({ size: "sm" })}>
-        <span className="hidden sm:inline">Find programs</span>
-        <span className="sm:hidden">Find</span>
+      <Link to="/write-offs" className={buttonVariants({ size: "sm" })}>
+        <span className="hidden sm:inline">New write-off</span>
+        <span className="sm:hidden">New</span>
       </Link>
     </>
   )
@@ -315,11 +309,11 @@ function MobileAuthControls({ onNavigate }: { onNavigate: () => void }) {
           Sign in
         </Link>
         <Link
-          to="/opportunities"
+          to="/write-offs"
           className="flex flex-row-reverse items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-muted"
           onClick={onNavigate}
         >
-          Find programs
+          New write-off
         </Link>
       </>
     )

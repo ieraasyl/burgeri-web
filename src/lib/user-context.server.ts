@@ -76,6 +76,18 @@ export async function requireAdmin(redirectTo = getCurrentPath()) {
   return context
 }
 
+export async function requireReviewer(redirectTo = getCurrentPath()) {
+  const context = await requireUser(redirectTo)
+
+  if (context.profile?.role !== "mentor" && context.profile?.role !== "admin") {
+    throw redirect({
+      to: "/write-offs",
+    })
+  }
+
+  return context
+}
+
 export async function requireOnboardingUser() {
   return requireUser("/onboarding")
 }

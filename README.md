@@ -14,9 +14,18 @@ This repository uses the reusable application foundation from `mentoria-hub`:
 - Better Auth session and sign-in infrastructure
 - responsive application shell, form controls, account, and admin patterns
 
-The existing Mentoria domain screens and data are retained as implementation
-references and still need to be replaced with the write-off workflow described
-in the case brief.
+The write-off vertical slice is available at:
+
+- `/write-offs` — authenticated employee submission and personal history
+- `/review/write-offs` — reviewer queue for `mentor` and `admin` profiles
+
+The reviewer experience adapts the search, filter, sort, summary, grouped
+check-in, and fast status-update patterns from the HackNU 2026 attendance
+dashboard. Approved requests are marked `queued` for iiko; a live iiko API
+adapter still requires restaurant credentials and endpoint details.
+
+The original Mentoria catalog screens remain in the repository as foundation
+references, but are no longer linked from the primary Burgeri navigation.
 
 ## Local setup
 
