@@ -8,6 +8,7 @@ interface __BaseEnv_Env {
 	GAS_URL: string;
 	GAS_SECRET: string;
 	BURGER_ML_URL: string;
+	WRITE_OFF_DISPROPORTION_THRESHOLD?: string;
 }
 declare namespace Cloudflare {
 	interface Env extends __BaseEnv_Env {}
@@ -17,7 +18,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL" | "GAS_URL" | "GAS_SECRET" | "BURGER_ML_URL">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL" | "GAS_URL" | "GAS_SECRET" | "BURGER_ML_URL" | "WRITE_OFF_DISPROPORTION_THRESHOLD">> {}
 }
 
 // Begin runtime types

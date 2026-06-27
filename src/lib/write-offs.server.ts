@@ -1,5 +1,6 @@
 import "@tanstack/react-start/server-only"
 
+import { env } from "cloudflare:workers"
 import { and, asc, desc, eq, inArray } from "drizzle-orm"
 
 import { account, user } from "@/db/auth-schema"
@@ -103,48 +104,56 @@ export async function getWriteOffDetailData(requestId: string) {
   return { request, iikoActPreview }
 }
 
-export async function getWriteOffAnalyticsData() {
+export async function getWriteOffAnalyticsData(days: 7 | 14 | 30 = 14) {
   await requireReviewer("/review/analytics")
   const rows = await loadRequests()
+  const today = startOfUtcDay(new Date())
+  const currentStart = addUtcDays(today, -(days - 1))
+  const previousStart = addUtcDays(currentStart, -days)
+  const currentRows = rows.filter(
+    (row) => new Date(row.createdAt) >= currentStart
+  )
+  const previousRows = rows.filter((row) => {
+    const created = new Date(row.createdAt)
+    return created >= previousStart && created < currentStart
+  })
 
-  const byStatus = {
-    total: rows.length,
-    pending: rows.filter((row) => row.status === "pending").length,
-    approved: rows.filter((row) => row.status === "approved").length,
-    rejected: rows.filter((row) => row.status === "rejected").length,
-  }
+  const byStatus = summarizeStatuses(currentRows)
+  const previousByStatus = summarizeStatuses(previousRows)
 
   const byLocation = groupCount(
-    rows,
+    currentRows,
     (row) => row.pointOfSaleId,
     (row) => row.pointOfSaleName
   )
   const byProduct = groupCount(
-    rows,
+    currentRows,
     (row) => row.productId,
     (row) => row.productName
   )
   const byCategory = groupCount(
-    rows,
+    currentRows,
     (row) => row.writeOffCategoryId,
     (row) => row.writeOffCategoryName
   )
 
   const byDeduction = {
-    none: rows.filter((row) => row.deductionMode === "none").length,
-    employee: rows.filter((row) => row.deductionMode === "employee").length,
+    none: currentRows.filter((row) => row.deductionMode === "none").length,
+    employee: currentRows.filter((row) => row.deductionMode === "employee")
+      .length,
   }
 
   const iikoSync = {
-    not_started: rows.filter((row) => row.iikoSyncStatus === "not_started")
-      .length,
-    queued: rows.filter((row) => row.iikoSyncStatus === "queued").length,
-    synced: rows.filter((row) => row.iikoSyncStatus === "synced").length,
-    failed: rows.filter((row) => row.iikoSyncStatus === "failed").length,
+    not_started: currentRows.filter(
+      (row) => row.iikoSyncStatus === "not_started"
+    ).length,
+    queued: currentRows.filter((row) => row.iikoSyncStatus === "queued").length,
+    synced: currentRows.filter((row) => row.iikoSyncStatus === "synced").length,
+    failed: currentRows.filter((row) => row.iikoSyncStatus === "failed").length,
   }
 
   const topChargedEmployees = [
-    ...rows
+    ...currentRows
       .filter((row) => row.deductionMode === "employee" && row.chargedEmployee)
       .reduce((map, row) => {
         const employee = row.chargedEmployee!
@@ -161,24 +170,31 @@ export async function getWriteOffAnalyticsData() {
     .sort((a, b) => b.total - a.total)
     .slice(0, 8)
 
-  const days: Array<{ date: string; total: number }> = []
-  const start = startOfDay(new Date())
-  for (let offset = 13; offset >= 0; offset -= 1) {
-    const day = new Date(start)
-    day.setDate(day.getDate() - offset)
-    const next = new Date(day)
-    next.setDate(next.getDate() + 1)
-    const total = rows.filter((row) => {
+  const trend = []
+  for (let offset = 0; offset < days; offset += 1) {
+    const day = addUtcDays(currentStart, offset)
+    const next = addUtcDays(day, 1)
+    const dayRows = currentRows.filter((row) => {
       const created = new Date(row.createdAt)
       return created >= day && created < next
-    }).length
-    days.push({ date: day.toISOString().slice(0, 10), total })
+    })
+    trend.push({
+      date: day.toISOString().slice(0, 10),
+      ...summarizeStatuses(dayRows),
+    })
   }
 
-  const approvedLossRows = rows.filter(
+  const approvedLossRows = currentRows.filter(
+    (row) => row.status === "approved" && row.lossAmount != null
+  )
+  const previousApprovedLossRows = previousRows.filter(
     (row) => row.status === "approved" && row.lossAmount != null
   )
   const totalLoss = approvedLossRows.reduce(
+    (sum, row) => sum + row.lossAmount!,
+    0
+  )
+  const previousTotalLoss = previousApprovedLossRows.reduce(
     (sum, row) => sum + row.lossAmount!,
     0
   )
@@ -200,19 +216,17 @@ export async function getWriteOffAnalyticsData() {
     (row) => row.writeOffCategoryName,
     (row) => row.lossAmount!
   )
-  const lossDays: Array<{ date: string; loss: number }> = []
-  for (let offset = 13; offset >= 0; offset -= 1) {
-    const day = new Date(start)
-    day.setDate(day.getDate() - offset)
-    const next = new Date(day)
-    next.setDate(next.getDate() + 1)
+  const lossTrend = []
+  for (let offset = 0; offset < days; offset += 1) {
+    const day = addUtcDays(currentStart, offset)
+    const next = addUtcDays(day, 1)
     const loss = approvedLossRows
       .filter((row) => {
         const created = new Date(row.createdAt)
         return created >= day && created < next
       })
       .reduce((sum, row) => sum + row.lossAmount!, 0)
-    lossDays.push({ date: day.toISOString().slice(0, 10), loss })
+    lossTrend.push({ date: day.toISOString().slice(0, 10), loss })
   }
   const topChargedEmployeesByLoss = [
     ...approvedLossRows
@@ -232,21 +246,39 @@ export async function getWriteOffAnalyticsData() {
     .sort((a, b) => b.loss - a.loss)
     .slice(0, 8)
 
+  const db = getServerDb()
+  const activeBranches = await loadActivePosCatalog(db)
+  const disproportionThreshold = getDisproportionThreshold()
+  const disproportionFlags = detectBranchDisproportionFlags(
+    currentRows,
+    activeBranches,
+    disproportionThreshold
+  )
+
   return {
+    period: {
+      days,
+      start: currentStart.toISOString(),
+      end: addUtcDays(today, 1).toISOString(),
+    },
     byStatus,
+    previousByStatus,
     byLocation,
     byProduct,
     byCategory,
     byDeduction,
     iikoSync,
     topChargedEmployees,
-    trend: days,
+    trend,
     totalLoss,
+    previousTotalLoss,
     lossByLocation,
     lossByProduct,
     lossByCategory,
-    lossTrend: lossDays,
+    lossTrend,
     topChargedEmployeesByLoss,
+    disproportionFlags,
+    disproportionThreshold,
   }
 }
 
@@ -780,6 +812,106 @@ async function loadRequests(requestId?: string) {
   })
 }
 
+const DISPROPORTION_MIN_TOTAL = 3
+
+function getDisproportionThreshold() {
+  const raw = env.WRITE_OFF_DISPROPORTION_THRESHOLD
+  const parsed = raw ? Number(raw) : 50
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 50
+}
+
+type WriteOffRequestRow = Awaited<ReturnType<typeof loadRequests>>[number]
+
+export type BranchDisproportionFlag = {
+  pointOfSaleId: string
+  pointOfSaleName: string
+  productId: string
+  productName: string
+  writeOffCategoryId: string
+  writeOffCategoryName: string
+  label: string
+  count: number
+  averageCount: number
+  percentAboveAverage: number
+}
+
+function detectBranchDisproportionFlags(
+  rows: WriteOffRequestRow[],
+  activeBranches: Array<{ id: string; name: string }>,
+  thresholdPercent: number
+): BranchDisproportionFlag[] {
+  if (activeBranches.length < 2) return []
+
+  const comboMap = new Map<
+    string,
+    {
+      productId: string
+      productName: string
+      writeOffCategoryId: string
+      writeOffCategoryName: string
+      branchCounts: Map<string, number>
+    }
+  >()
+
+  for (const row of rows) {
+    const key = `${row.productId}:${row.writeOffCategoryId}`
+    const current = comboMap.get(key)
+    if (current) {
+      current.branchCounts.set(
+        row.pointOfSaleId,
+        (current.branchCounts.get(row.pointOfSaleId) ?? 0) + 1
+      )
+    } else {
+      comboMap.set(key, {
+        productId: row.productId,
+        productName: row.productName,
+        writeOffCategoryId: row.writeOffCategoryId,
+        writeOffCategoryName: row.writeOffCategoryName,
+        branchCounts: new Map([[row.pointOfSaleId, 1]]),
+      })
+    }
+  }
+
+  const flags: BranchDisproportionFlag[] = []
+  const branchCount = activeBranches.length
+
+  for (const combo of comboMap.values()) {
+    const totalCount = [...combo.branchCounts.values()].reduce(
+      (sum, count) => sum + count,
+      0
+    )
+    if (totalCount < DISPROPORTION_MIN_TOTAL) continue
+
+    const averageCount = totalCount / branchCount
+    if (averageCount === 0) continue
+
+    const threshold = averageCount * (1 + thresholdPercent / 100)
+    const label = `${combo.productName} – ${combo.writeOffCategoryName}`
+
+    for (const branch of activeBranches) {
+      const count = combo.branchCounts.get(branch.id) ?? 0
+      if (count <= threshold) continue
+
+      flags.push({
+        pointOfSaleId: branch.id,
+        pointOfSaleName: branch.name,
+        productId: combo.productId,
+        productName: combo.productName,
+        writeOffCategoryId: combo.writeOffCategoryId,
+        writeOffCategoryName: combo.writeOffCategoryName,
+        label,
+        count,
+        averageCount: Math.round(averageCount * 10) / 10,
+        percentAboveAverage: Math.round(
+          ((count - averageCount) / averageCount) * 100
+        ),
+      })
+    }
+  }
+
+  return flags.sort((a, b) => b.percentAboveAverage - a.percentAboveAverage)
+}
+
 function groupCount<T>(
   rows: T[],
   getId: (row: T) => string,
@@ -817,9 +949,24 @@ function groupSum<T>(
   return [...map.values()].sort((a, b) => b.loss - a.loss)
 }
 
-function startOfDay(date: Date) {
+function summarizeStatuses<T extends { status: string }>(rows: T[]) {
+  return {
+    total: rows.length,
+    pending: rows.filter((row) => row.status === "pending").length,
+    approved: rows.filter((row) => row.status === "approved").length,
+    rejected: rows.filter((row) => row.status === "rejected").length,
+  }
+}
+
+function startOfUtcDay(date: Date) {
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  )
+}
+
+function addUtcDays(date: Date, days: number) {
   const copy = new Date(date)
-  copy.setHours(0, 0, 0, 0)
+  copy.setUTCDate(copy.getUTCDate() + days)
   return copy
 }
 
