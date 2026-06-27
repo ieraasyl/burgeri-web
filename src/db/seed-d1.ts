@@ -14,7 +14,7 @@ import {
   seedWriteOffs,
 } from "@/db/seed-data"
 
-const databaseName = process.env.D1_DATABASE_NAME ?? "burgeri-web-db"
+const databaseName = process.env.D1_DATABASE_NAME ?? "burgeri_db"
 const isRemote = process.argv.includes("--remote")
 const mode = isRemote ? "--remote" : "--local"
 

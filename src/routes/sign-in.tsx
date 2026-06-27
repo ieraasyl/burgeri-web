@@ -54,6 +54,8 @@ function SignInPage() {
 
     setIsSigningIn(true)
 
+    console.log("EMAIL SENT TO AUTH:", email)
+
     const result = await signIn.email({
       email: normalizedEmail,
       password: currentPassword,
