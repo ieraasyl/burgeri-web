@@ -19,28 +19,35 @@ function HomePage() {
         <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_30rem] lg:px-8 lg:py-24">
           <div className="flex max-w-3xl flex-col justify-center">
             <p className="text-sm font-medium text-primary">
-              Restaurant operations, without paper
+              Burgeri write-off control
             </p>
             <h1 className="mt-4 font-heading text-4xl font-semibold tracking-normal text-balance sm:text-5xl lg:text-6xl">
-              Record every loss while the evidence is fresh.
+              Approve every loss, then push it straight to iiko.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-              Employees submit a photo-backed write-off from their phone.
-              Reviewers verify it in one queue, and approved records are
-              prepared for iiko.
+              Restaurant staff photograph a write-off from their phone.
+              Reviewers verify the evidence in one queue, approve valid losses,
+              and the act is created in iiko — with full history and analytics
+              for accounting.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/write-offs" className={buttonVariants({ size: "lg" })}>
-                Create a write-off
+              <Link
+                to="/review/write-offs"
+                className={buttonVariants({ size: "lg" })}
+              >
+                Open reviewer queue
                 <IconArrowRight data-icon="inline-end" />
               </Link>
               <Link
-                to="/review/write-offs"
+                to="/write-offs"
                 className={buttonVariants({ variant: "outline", size: "lg" })}
               >
-                Reviewer queue
+                Submit a write-off
               </Link>
             </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              A dedicated employee mobile app is on the way.
+            </p>
           </div>
 
           <div className="rounded-3xl border bg-card p-5 shadow-sm sm:p-7">

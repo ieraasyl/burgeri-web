@@ -9,7 +9,7 @@ export const auth = betterAuth({
     schema: {},
   }),
   secret: process.env.BETTER_AUTH_SECRET,
-  appName: "Mentoria Hub",
+  appName: "Burgeri Ops",
   ...(process.env.GOOGLE_CLIENT_ID &&
     process.env.GOOGLE_CLIENT_SECRET && {
       socialProviders: {

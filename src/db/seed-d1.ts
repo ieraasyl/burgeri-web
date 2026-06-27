@@ -3,216 +3,102 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import {
-  seedCourseTags,
-  seedCourses,
-  seedLessons,
-  seedOpportunities,
-  seedOpportunityTags,
-  seedQuizOptions,
-  seedQuizQuestions,
-  seedTags,
-} from "@/db/seed-data"
+import { seedUsers, seedWriteOffs } from "@/db/seed-data"
 
 const databaseName = process.env.D1_DATABASE_NAME ?? "burgeri-web-db"
 const isRemote = process.argv.includes("--remote")
 const mode = isRemote ? "--remote" : "--local"
 
+const accountCreatedAt = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+
 const statements = [
   insertRows(
-    "tag",
-    ["id", "slug", "name", "kind", "color"],
-    seedTags,
-    (row) => [row.id, row.slug, row.name, row.kind, row.color],
-    ["slug"],
-    ["name", "kind", "color"]
+    "user",
+    ["id", "name", "email", "email_verified", "created_at", "updated_at"],
+    seedUsers,
+    (row) => [
+      row.id,
+      row.name,
+      row.email,
+      true,
+      accountCreatedAt,
+      accountCreatedAt,
+    ],
+    ["id"],
+    ["name", "email", "email_verified"]
   ),
   insertRows(
-    "opportunity",
+    "staff_profile",
+    ["user_id", "role", "default_location_id", "created_at", "updated_at"],
+    seedUsers,
+    (row) => [
+      row.id,
+      row.role,
+      row.defaultLocationId,
+      accountCreatedAt,
+      accountCreatedAt,
+    ],
+    ["user_id"],
+    ["role", "default_location_id"]
+  ),
+  insertRows(
+    "write_off_request",
     [
       "id",
-      "slug",
-      "title",
-      "summary",
-      "description",
-      "category",
-      "format",
-      "provider_name",
-      "location",
-      "country",
-      "city",
-      "min_grade",
-      "max_grade",
-      "min_age",
-      "max_age",
-      "deadline_at",
-      "starts_at",
-      "ends_at",
-      "apply_url",
-      "requirements",
-      "is_featured",
-      "is_published",
+      "submitter_id",
+      "location_id",
+      "product_type",
+      "quantity",
+      "deduction_type",
+      "charged_employee_id",
+      "comment",
+      "photo_data_url",
+      "status",
+      "reviewer_id",
+      "review_comment",
+      "reviewed_at",
+      "iiko_sync_status",
+      "iiko_document_id",
+      "created_at",
+      "updated_at",
     ],
-    seedOpportunities,
+    seedWriteOffs,
     (row) => [
       row.id,
-      row.slug,
-      row.title,
-      row.summary,
-      row.description,
-      row.category,
-      row.format,
-      row.providerName,
-      row.location,
-      row.country,
-      row.city,
-      row.minGrade,
-      row.maxGrade,
-      null,
-      null,
-      row.deadlineAt,
-      row.startsAt,
-      row.endsAt,
-      row.applyUrl,
-      row.requirements,
-      row.isFeatured,
-      row.isPublished,
+      row.submitterId,
+      row.locationId,
+      row.productType,
+      row.quantity,
+      row.deductionType,
+      row.chargedEmployeeId,
+      row.comment,
+      row.photoDataUrl,
+      row.status,
+      row.reviewerId,
+      row.reviewComment,
+      row.reviewedAt,
+      row.iikoSyncStatus,
+      row.iikoDocumentId,
+      row.createdAt,
+      row.reviewedAt ?? row.createdAt,
     ],
-    ["slug"],
+    ["id"],
     [
-      "title",
-      "summary",
-      "description",
-      "category",
-      "format",
-      "provider_name",
-      "location",
-      "country",
-      "city",
-      "min_grade",
-      "max_grade",
-      "min_age",
-      "max_age",
-      "deadline_at",
-      "starts_at",
-      "ends_at",
-      "apply_url",
-      "requirements",
-      "is_featured",
-      "is_published",
+      "submitter_id",
+      "location_id",
+      "product_type",
+      "quantity",
+      "deduction_type",
+      "charged_employee_id",
+      "comment",
+      "photo_data_url",
+      "status",
+      "reviewer_id",
+      "review_comment",
+      "reviewed_at",
+      "iiko_sync_status",
+      "iiko_document_id",
     ]
-  ),
-  insertPairs(
-    "opportunity_tag",
-    ["opportunity_id", "tag_id"],
-    seedOpportunityTags
-  ),
-  insertRows(
-    "course",
-    [
-      "id",
-      "slug",
-      "title",
-      "summary",
-      "description",
-      "difficulty",
-      "estimated_hours",
-      "thumbnail_url",
-      "is_featured",
-      "is_published",
-    ],
-    seedCourses,
-    (row) => [
-      row.id,
-      row.slug,
-      row.title,
-      row.summary,
-      row.description,
-      row.difficulty,
-      row.estimatedHours,
-      row.thumbnailUrl,
-      row.isFeatured,
-      row.isPublished,
-    ],
-    ["slug"],
-    [
-      "title",
-      "summary",
-      "description",
-      "difficulty",
-      "estimated_hours",
-      "thumbnail_url",
-      "is_featured",
-      "is_published",
-    ]
-  ),
-  insertPairs("course_tag", ["course_id", "tag_id"], seedCourseTags),
-  insertRows(
-    "lesson",
-    [
-      "id",
-      "course_id",
-      "slug",
-      "title",
-      "summary",
-      "content",
-      "video_url",
-      "materials",
-      "assignment_prompt",
-      "duration_minutes",
-      "position",
-      "is_preview",
-    ],
-    seedLessons,
-    (row) => [
-      row.id,
-      row.courseId,
-      row.slug,
-      row.title,
-      row.summary,
-      row.content,
-      row.videoUrl,
-      row.materials,
-      row.assignmentPrompt,
-      row.durationMinutes,
-      row.position,
-      row.isPreview ?? false,
-    ],
-    ["course_id", "slug"],
-    [
-      "title",
-      "summary",
-      "content",
-      "video_url",
-      "materials",
-      "assignment_prompt",
-      "duration_minutes",
-      "position",
-      "is_preview",
-    ]
-  ),
-  insertRows(
-    "quiz_question",
-    ["id", "lesson_id", "type", "prompt", "explanation", "position"],
-    seedQuizQuestions,
-    (row) => [
-      row.id,
-      row.lessonId,
-      row.type,
-      row.prompt,
-      row.explanation,
-      row.position,
-    ],
-    ["lesson_id", "position"],
-    ["type", "prompt", "explanation"]
-  ),
-  insertRows(
-    "quiz_option",
-    ["id", "question_id", "label", "is_correct", "position"],
-    seedQuizOptions,
-    (row) => [row.id, row.questionId, row.label, row.isCorrect, row.position],
-    ["question_id", "position"],
-    ["label", "is_correct"]
   ),
 ]
 
@@ -255,20 +141,6 @@ function insertRows<T>(
   ].join(", ")
 
   return `INSERT INTO ${quoteIdentifier(table)} (${columnSql}) VALUES\n${valuesSql}\nON CONFLICT (${conflictSql}) DO UPDATE SET ${updateSql};`
-}
-
-function insertPairs(
-  table: string,
-  columns: [string, string],
-  rows: readonly (readonly [string, string])[]
-) {
-  const columnSql = columns.map(quoteIdentifier).join(", ")
-  const valuesSql = rows
-    .map(([first, second]) => `(${sqlValue(first)}, ${sqlValue(second)})`)
-    .join(",\n")
-  const conflictSql = columns.map(quoteIdentifier).join(", ")
-
-  return `INSERT INTO ${quoteIdentifier(table)} (${columnSql}) VALUES\n${valuesSql}\nON CONFLICT (${conflictSql}) DO NOTHING;`
 }
 
 function quoteIdentifier(value: string) {

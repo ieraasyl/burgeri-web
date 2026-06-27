@@ -153,7 +153,7 @@ function SignInPage() {
       <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-8 sm:px-6 lg:min-h-[calc(100svh-8rem)] lg:grid-cols-[minmax(0,1fr)_29rem] lg:px-8 lg:py-12">
         <section className="flex min-w-0 flex-col justify-center">
           <h1 className="max-w-3xl font-heading text-3xl font-semibold text-balance sm:text-4xl lg:text-5xl">
-            Keep your shortlist tied to one email.
+            Sign in to the Burgeri write-off workspace.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
             Sign in with a one-time code. New accounts are created after the
@@ -162,9 +162,9 @@ function SignInPage() {
 
           <dl className="mt-10 hidden max-w-md gap-5 lg:grid">
             {[
-              ["01", "Find programs"],
-              ["02", "Save the right fit"],
-              ["03", "Return before deadlines"],
+              ["01", "Review photo-backed write-offs"],
+              ["02", "Approve or reject in one queue"],
+              ["03", "Push approved acts to iiko"],
             ].map(([marker, label]) => (
               <div key={marker} className="flex items-center gap-4">
                 <span className="font-heading text-xl font-semibold text-primary/40 tabular-nums">
@@ -181,7 +181,7 @@ function SignInPage() {
             <CardHeader>
               <CardTitle>Sign in</CardTitle>
               <CardDescription>
-                Use the email where application reminders should land.
+                Use your work email to reach the write-off workspace.
               </CardDescription>
             </CardHeader>
 
@@ -215,7 +215,7 @@ function SignInPage() {
                         value={email}
                         disabled={isBusy}
                         aria-invalid={Boolean(error)}
-                        placeholder="student@example.com"
+                        placeholder="you@burgeri.kz"
                         onChange={(event) => setEmail(event.target.value)}
                       />
                     </Field>
@@ -236,7 +236,7 @@ function SignInPage() {
                         onChange={(event) => setName(event.target.value)}
                       />
                       <FieldDescription>
-                        Used only when this email is new to Mentoria Hub.
+                        Used only when this email is new to Burgeri Ops.
                       </FieldDescription>
                     </Field>
                     <Button type="submit" disabled={isBusy}>
@@ -333,8 +333,8 @@ function SignInPage() {
 
             <CardFooter className="border-t">
               <p className="text-sm leading-6 text-muted-foreground">
-                By continuing, use this account only for your own program
-                shortlist and course progress.
+                By continuing, use this account only for your own restaurant
+                write-off submissions and reviews.
               </p>
             </CardFooter>
           </Card>

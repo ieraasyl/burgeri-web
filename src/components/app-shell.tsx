@@ -14,7 +14,10 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { signOut, useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 
-const navItems = [{ href: "/write-offs", label: "Write-offs" }] as const
+const navItems = [
+  { href: "/review/write-offs", label: "Reviewer queue" },
+  { href: "/write-offs", label: "Submit" },
+] as const
 
 function useHideOnScroll() {
   const [isHidden, setIsHidden] = useState(false)

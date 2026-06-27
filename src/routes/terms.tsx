@@ -21,8 +21,8 @@ function TermsPage() {
             Acceptance
           </h2>
           <p className="mt-2">
-            By using Mentoria Hub, you agree to these Terms of Service. If you
-            do not agree, do not use the service.
+            By using Burgeri Ops, you agree to these Terms of Service. If you do
+            not agree, do not use the service.
           </p>
         </section>
 
@@ -31,10 +31,10 @@ function TermsPage() {
             Service
           </h2>
           <p className="mt-2">
-            Mentoria Hub helps students discover educational opportunities,
-            track deadlines, and access self-paced courses. Information on the
-            platform is provided for general educational planning and may change
-            over time.
+            Burgeri Ops lets restaurant staff submit product write-off requests
+            with photo evidence and lets reviewers approve or reject them and
+            sync approved acts to iiko. The service is for internal restaurant
+            operations and may change over time.
           </p>
         </section>
 
@@ -55,8 +55,8 @@ function TermsPage() {
           </h2>
           <p className="mt-2">
             You may not misuse the service, attempt to disrupt it, access data
-            without permission, or use Mentoria Hub for unlawful or harmful
-            activity.
+            without permission, submit false write-offs, or use Burgeri Ops for
+            unlawful or harmful activity.
           </p>
         </section>
 
@@ -65,9 +65,9 @@ function TermsPage() {
             No Guarantee
           </h2>
           <p className="mt-2">
-            We try to keep opportunity and course information useful and
-            current, but we do not guarantee admission, award decisions,
-            scholarship outcomes, deadline accuracy, or uninterrupted service.
+            We try to keep write-off records and iiko synchronization accurate
+            and current, but we do not guarantee uninterrupted service or that
+            every record reaches iiko without delay.
           </p>
         </section>
 
@@ -77,7 +77,7 @@ function TermsPage() {
           </h2>
           <p className="mt-2">
             We may update these terms as the service changes. Continued use of
-            Mentoria Hub after an update means you accept the revised terms.
+            Burgeri Ops after an update means you accept the revised terms.
           </p>
         </section>
 

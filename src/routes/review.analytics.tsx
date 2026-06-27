@@ -1,0 +1,243 @@
+import { createFileRoute } from "@tanstack/react-router"
+import { createServerFn } from "@tanstack/react-start"
+
+import { productTypeLabels } from "@/lib/write-offs"
+import type { WriteOffProductType } from "@/lib/write-offs"
+
+const getAnalytics = createServerFn({ method: "GET" }).handler(async () => {
+  const { getWriteOffAnalyticsData } = await import("@/lib/write-offs.server")
+  return getWriteOffAnalyticsData()
+})
+
+export const Route = createFileRoute("/review/analytics")({
+  loader: () => getAnalytics(),
+  component: AnalyticsPage,
+})
+
+function AnalyticsPage() {
+  const data = Route.useLoaderData()
+  const trendMax = Math.max(1, ...data.trend.map((day) => day.total))
+  const locationMax = Math.max(1, ...data.byLocation.map((row) => row.total))
+  const productMax = Math.max(1, ...data.byProduct.map((row) => row.total))
+  const deductionTotal = data.byDeduction.company + data.byDeduction.employee
+
+  return (
+    <div className="flex flex-col gap-8">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="All write-offs" value={data.byStatus.total} />
+        <StatCard label="Pending" value={data.byStatus.pending} tone="amber" />
+        <StatCard
+          label="Approved"
+          value={data.byStatus.approved}
+          tone="green"
+        />
+        <StatCard label="Rejected" value={data.byStatus.rejected} tone="red" />
+      </section>
+
+      <section className="rounded-2xl border bg-card p-5">
+        <h2 className="font-heading text-lg font-semibold">
+          Submissions · last 14 days
+        </h2>
+        <div className="mt-5 flex items-end gap-1.5">
+          {data.trend.map((day) => (
+            <div
+              key={day.date}
+              className="group flex flex-1 flex-col items-center gap-2"
+            >
+              <div className="flex h-32 w-full items-end">
+                <div
+                  className="w-full rounded-t bg-primary/80 transition-colors group-hover:bg-primary"
+                  style={{
+                    height: `${Math.round((day.total / trendMax) * 100)}%`,
+                    minHeight: day.total > 0 ? "0.5rem" : "0",
+                  }}
+                  title={`${day.date}: ${day.total}`}
+                />
+              </div>
+              <span className="text-[0.625rem] text-muted-foreground">
+                {day.date.slice(5)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="rounded-2xl border bg-card p-5">
+          <h2 className="font-heading text-lg font-semibold">By restaurant</h2>
+          <div className="mt-4 flex flex-col gap-3">
+            {data.byLocation.length === 0 ? (
+              <Empty />
+            ) : (
+              data.byLocation.map((row) => (
+                <BarRow
+                  key={row.id}
+                  label={row.name}
+                  value={row.total}
+                  max={locationMax}
+                  meta={`${row.pending} pending · ${row.approved} approved`}
+                />
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border bg-card p-5">
+          <h2 className="font-heading text-lg font-semibold">By product</h2>
+          <div className="mt-4 flex flex-col gap-3">
+            {data.byProduct.length === 0 ? (
+              <Empty />
+            ) : (
+              data.byProduct.map((row) => (
+                <BarRow
+                  key={row.productType}
+                  label={
+                    productTypeLabels[row.productType as WriteOffProductType]
+                  }
+                  value={row.total}
+                  max={productMax}
+                />
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border bg-card p-5">
+          <h2 className="font-heading text-lg font-semibold">
+            Deduction split
+          </h2>
+          <div className="mt-4 flex flex-col gap-3">
+            <BarRow
+              label="No employee deduction"
+              value={data.byDeduction.company}
+              max={Math.max(1, deductionTotal)}
+            />
+            <BarRow
+              label="Deducted from employee"
+              value={data.byDeduction.employee}
+              max={Math.max(1, deductionTotal)}
+            />
+          </div>
+          <h3 className="mt-6 text-sm font-medium">Top charged employees</h3>
+          <div className="mt-3 flex flex-col gap-2">
+            {data.topChargedEmployees.length === 0 ? (
+              <Empty />
+            ) : (
+              data.topChargedEmployees.map((row) => (
+                <div
+                  key={row.userId}
+                  className="flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-sm"
+                >
+                  <span className="truncate">{row.name}</span>
+                  <span className="font-medium">{row.total}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border bg-card p-5">
+          <h2 className="font-heading text-lg font-semibold">iiko sync</h2>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <SyncTile label="Not started" value={data.iikoSync.not_started} />
+            <SyncTile
+              label="Queued"
+              value={data.iikoSync.queued}
+              tone="amber"
+            />
+            <SyncTile
+              label="Synced"
+              value={data.iikoSync.synced}
+              tone="green"
+            />
+            <SyncTile label="Failed" value={data.iikoSync.failed} tone="red" />
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+function BarRow({
+  label,
+  value,
+  max,
+  meta,
+}: {
+  label: string
+  value: number
+  max: number
+  meta?: string
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="truncate">{label}</span>
+        <span className="font-medium tabular-nums">{value}</span>
+      </div>
+      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary"
+          style={{ width: `${Math.round((value / max) * 100)}%` }}
+        />
+      </div>
+      {meta && <p className="mt-1 text-xs text-muted-foreground">{meta}</p>}
+    </div>
+  )
+}
+
+function StatCard({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string
+  value: number
+  tone?: "default" | "amber" | "green" | "red"
+}) {
+  const tones = {
+    default: "text-foreground",
+    amber: "text-amber-600 dark:text-amber-300",
+    green: "text-emerald-600 dark:text-emerald-300",
+    red: "text-destructive",
+  }
+
+  return (
+    <div className="rounded-2xl border bg-card p-5">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className={`mt-2 font-heading text-3xl font-semibold ${tones[tone]}`}>
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function SyncTile({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string
+  value: number
+  tone?: "default" | "amber" | "green" | "red"
+}) {
+  const tones = {
+    default: "text-foreground",
+    amber: "text-amber-600 dark:text-amber-300",
+    green: "text-emerald-600 dark:text-emerald-300",
+    red: "text-destructive",
+  }
+
+  return (
+    <div className="rounded-xl bg-muted p-4">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className={`mt-1 font-heading text-2xl font-semibold ${tones[tone]}`}>
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function Empty() {
+  return <p className="text-sm text-muted-foreground">No data yet.</p>
+}

@@ -1,15 +1,24 @@
 import type {
   iikoSyncStatuses,
+  userRoles,
   writeOffDeductionTypes,
   writeOffProductTypes,
   writeOffStatuses,
 } from "@/db/schema"
 
+export type UserRole = (typeof userRoles)[number]
+
+export const userRoleLabels: Record<UserRole, string> = {
+  employee: "Employee",
+  reviewer: "Reviewer",
+  admin: "Admin",
+}
+
 export const restaurantLocations = [
-  { id: "abai", name: "Burger King · Abai" },
-  { id: "mega-almaty", name: "Burger King · MEGA Almaty" },
-  { id: "dostyk-plaza", name: "Burger King · Dostyk Plaza" },
-  { id: "airport", name: "Burger King · Almaty Airport" },
+  { id: "abai", name: "Burgeri · Abai" },
+  { id: "mega-almaty", name: "Burgeri · MEGA Almaty" },
+  { id: "dostyk-plaza", name: "Burgeri · Dostyk Plaza" },
+  { id: "airport", name: "Burgeri · Almaty Airport" },
 ] as const
 export const restaurantLocationIds = [
   "abai",
