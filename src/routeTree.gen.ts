@@ -17,9 +17,11 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReviewIndexRouteImport } from './routes/review.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ReviewWriteOffsRouteImport } from './routes/review.write-offs'
 import { Route as ReviewHistoryRouteImport } from './routes/review.history'
 import { Route as ReviewAnalyticsRouteImport } from './routes/review.analytics'
+import { Route as AdminCatalogRouteImport } from './routes/admin.catalog'
 import { Route as ReviewWriteOffsIndexRouteImport } from './routes/review.write-offs.index'
 import { Route as ReviewWriteOffsIdRouteImport } from './routes/review.write-offs.$id'
 import { Route as ApiMobileWriteOffRequestsRouteImport } from './routes/api/mobile/write-off-requests'
@@ -74,6 +76,11 @@ const ReviewIndexRoute = ReviewIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ReviewRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ReviewWriteOffsRoute = ReviewWriteOffsRouteImport.update({
   id: '/write-offs',
   path: '/write-offs',
@@ -88,6 +95,11 @@ const ReviewAnalyticsRoute = ReviewAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
   getParentRoute: () => ReviewRoute,
+} as any)
+const AdminCatalogRoute = AdminCatalogRouteImport.update({
+  id: '/catalog',
+  path: '/catalog',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ReviewWriteOffsIndexRoute = ReviewWriteOffsIndexRouteImport.update({
   id: '/',
@@ -167,14 +179,16 @@ const ApiMobileCatalogEmployeesRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/review': typeof ReviewRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/admin/catalog': typeof AdminCatalogRoute
   '/review/analytics': typeof ReviewAnalyticsRoute
   '/review/history': typeof ReviewHistoryRoute
   '/review/write-offs': typeof ReviewWriteOffsRouteWithChildren
+  '/admin/': typeof AdminIndexRoute
   '/review/': typeof ReviewIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/me': typeof ApiMobileMeRoute
@@ -193,12 +207,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/admin': typeof AdminRoute
   '/privacy': typeof PrivacyRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/admin/catalog': typeof AdminCatalogRoute
   '/review/analytics': typeof ReviewAnalyticsRoute
   '/review/history': typeof ReviewHistoryRoute
+  '/admin': typeof AdminIndexRoute
   '/review': typeof ReviewIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/me': typeof ApiMobileMeRoute
@@ -218,14 +233,16 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/review': typeof ReviewRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/admin/catalog': typeof AdminCatalogRoute
   '/review/analytics': typeof ReviewAnalyticsRoute
   '/review/history': typeof ReviewHistoryRoute
   '/review/write-offs': typeof ReviewWriteOffsRouteWithChildren
+  '/admin/': typeof AdminIndexRoute
   '/review/': typeof ReviewIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/me': typeof ApiMobileMeRoute
@@ -251,9 +268,11 @@ export interface FileRouteTypes {
     | '/review'
     | '/sign-in'
     | '/terms'
+    | '/admin/catalog'
     | '/review/analytics'
     | '/review/history'
     | '/review/write-offs'
+    | '/admin/'
     | '/review/'
     | '/api/auth/$'
     | '/api/mobile/me'
@@ -272,12 +291,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
-    | '/admin'
     | '/privacy'
     | '/sign-in'
     | '/terms'
+    | '/admin/catalog'
     | '/review/analytics'
     | '/review/history'
+    | '/admin'
     | '/review'
     | '/api/auth/$'
     | '/api/mobile/me'
@@ -301,9 +321,11 @@ export interface FileRouteTypes {
     | '/review'
     | '/sign-in'
     | '/terms'
+    | '/admin/catalog'
     | '/review/analytics'
     | '/review/history'
     | '/review/write-offs'
+    | '/admin/'
     | '/review/'
     | '/api/auth/$'
     | '/api/mobile/me'
@@ -323,7 +345,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
   ReviewRoute: typeof ReviewRouteWithChildren
   SignInRoute: typeof SignInRoute
@@ -397,6 +419,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewIndexRouteImport
       parentRoute: typeof ReviewRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/review/write-offs': {
       id: '/review/write-offs'
       path: '/write-offs'
@@ -417,6 +446,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/review/analytics'
       preLoaderRoute: typeof ReviewAnalyticsRouteImport
       parentRoute: typeof ReviewRoute
+    }
+    '/admin/catalog': {
+      id: '/admin/catalog'
+      path: '/catalog'
+      fullPath: '/admin/catalog'
+      preLoaderRoute: typeof AdminCatalogRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/review/write-offs/': {
       id: '/review/write-offs/'
@@ -512,6 +548,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminCatalogRoute: typeof AdminCatalogRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCatalogRoute: AdminCatalogRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface ReviewWriteOffsRouteChildren {
   ReviewWriteOffsIdRoute: typeof ReviewWriteOffsIdRoute
   ReviewWriteOffsIndexRoute: typeof ReviewWriteOffsIndexRoute
@@ -562,7 +610,7 @@ const ApiMobileWriteOffRequestsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
   ReviewRoute: ReviewRouteWithChildren,
   SignInRoute: SignInRoute,

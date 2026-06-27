@@ -11,27 +11,27 @@ export type WriteOffDeductionMode = (typeof writeOffDeductionModes)[number]
 export type IikoSyncStatus = (typeof iikoSyncStatuses)[number]
 
 export const userRoleLabels: Record<UserRole, string> = {
-  employee: "Employee",
-  reviewer: "Reviewer",
-  admin: "Admin",
+  employee: "Сотрудник",
+  reviewer: "Ревьюер",
+  admin: "Администратор",
 }
 
 export const deductionModeLabels: Record<WriteOffDeductionMode, string> = {
-  none: "No employee deduction",
-  employee: "Deduct from employee",
+  none: "Без удержания с сотрудника",
+  employee: "Удержать с сотрудника",
 }
 
 export const writeOffStatusLabels: Record<WriteOffStatus, string> = {
-  pending: "Pending",
-  approved: "Approved",
-  rejected: "Rejected",
+  pending: "На рассмотрении",
+  approved: "Одобрено",
+  rejected: "Отклонено",
 }
 
 export const iikoSyncStatusLabels: Record<IikoSyncStatus, string> = {
-  not_started: "Not started",
-  queued: "Queued for iiko",
-  synced: "Synced to iiko",
-  failed: "iiko sync failed",
+  not_started: "Не начато",
+  queued: "В очереди на iiko",
+  synced: "Отправлено в iiko",
+  failed: "Ошибка синхронизации с iiko",
 }
 
 // Permissions advertised to the mobile app via /api/mobile/me.

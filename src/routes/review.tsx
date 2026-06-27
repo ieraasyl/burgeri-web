@@ -21,9 +21,9 @@ export const Route = createFileRoute("/review")({
 })
 
 const tabs = [
-  { to: "/review/write-offs", label: "Queue", icon: IconListCheck },
-  { to: "/review/history", label: "History", icon: IconHistory },
-  { to: "/review/analytics", label: "Analytics", icon: IconChartBar },
+  { to: "/review/write-offs", label: "Очередь", icon: IconListCheck },
+  { to: "/review/history", label: "История", icon: IconHistory },
+  { to: "/review/analytics", label: "Аналитика", icon: IconChartBar },
 ] as const
 
 function ReviewLayout() {
@@ -33,13 +33,15 @@ function ReviewLayout() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <section className="border-b pb-6">
         <div>
-          <p className="text-sm font-medium text-primary">Reviewer workspace</p>
+          <p className="text-sm font-medium text-primary">
+            Рабочее место ревьюера
+          </p>
           <h1 className="mt-2 font-heading text-4xl font-semibold text-balance">
-            Write-off control
+            Контроль списаний
           </h1>
           <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">
-            Verify the evidence, approve valid losses, and push approved acts to
-            iiko.
+            Проверяйте доказательства, одобряйте обоснованные списания и
+            отправляйте одобренные акты в iiko.
           </p>
         </div>
       </section>
@@ -68,7 +70,7 @@ function ReviewLayout() {
             className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
           >
             <IconUsersGroup className="size-4" />
-            Staff
+            Администрирование
           </Link>
         )}
       </nav>

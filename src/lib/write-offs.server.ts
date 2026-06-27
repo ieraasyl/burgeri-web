@@ -1,6 +1,6 @@
 import "@tanstack/react-start/server-only"
 
-import { and, desc, eq, inArray } from "drizzle-orm"
+import { and, asc, desc, eq, inArray } from "drizzle-orm"
 
 import { account, user } from "@/db/auth-schema"
 import { setStaffRole } from "@/db/queries"
@@ -26,6 +26,9 @@ import type {
   SetEmployeePasswordInput,
   SetStaffRoleInput,
   SyncWriteOffToIikoInput,
+  UpsertPointOfSaleInput,
+  UpsertProductCategoryInput,
+  UpsertProductInput,
 } from "@/lib/validation"
 
 export async function getWriteOffReviewData() {
@@ -153,6 +156,44 @@ export async function getWriteOffAnalyticsData() {
   }
 }
 
+export async function getCatalogAdminData() {
+  await requireAdmin("/admin/catalog")
+  const db = getServerDb()
+  const [posRows, categoryRows, productRows] = await Promise.all([
+    db.select().from(pointOfSale).orderBy(asc(pointOfSale.name)),
+    db
+      .select()
+      .from(productCategory)
+      .orderBy(asc(productCategory.position), asc(productCategory.name)),
+    db.select().from(product).orderBy(asc(product.name)),
+  ])
+
+  return {
+    pointsOfSale: posRows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      address: row.address,
+      isActive: row.isActive,
+      updatedAt: row.updatedAt.toISOString(),
+    })),
+    categories: categoryRows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      position: row.position,
+      updatedAt: row.updatedAt.toISOString(),
+    })),
+    products: productRows.map((row) => ({
+      id: row.id,
+      categoryId: row.categoryId,
+      name: row.name,
+      sku: row.sku,
+      unit: row.unit,
+      isActive: row.isActive,
+      updatedAt: row.updatedAt.toISOString(),
+    })),
+  }
+}
+
 export async function getStaffDirectoryData() {
   await requireAdmin("/admin")
   const db = getServerDb()
@@ -222,8 +263,12 @@ export async function reviewWriteOffRequestAction(
 
   if (requestRows.length === 0) {
     return actionError(
-      "This request was already processed. Refresh the queue to see its current status."
+      "Заявка уже обработана. Обновите очередь, чтобы увидеть актуальный статус."
     )
+  }
+
+  if (input.status === "approved") {
+    await syncWriteOffToIikoAction({ requestId: input.requestId })
   }
 
   return actionOk(requestRows[0])
@@ -236,13 +281,13 @@ export async function syncWriteOffToIikoAction(input: SyncWriteOffToIikoInput) {
   const request = rows.at(0)
 
   if (!request) {
-    return actionError("This request no longer exists.")
+    return actionError("Заявка больше не существует.")
   }
   if (request.status !== "approved") {
-    return actionError("Only approved requests can be sent to iiko.")
+    return actionError("В iiko можно отправить только одобренные заявки.")
   }
   if (request.iikoSyncStatus === "synced") {
-    return actionError("This request is already synced to iiko.")
+    return actionError("Заявка уже синхронизирована с iiko.")
   }
 
   try {
@@ -276,7 +321,9 @@ export async function syncWriteOffToIikoAction(input: SyncWriteOffToIikoInput) {
       .update(writeOffRequest)
       .set({ iikoSyncStatus: "failed", updatedAt: new Date() })
       .where(eq(writeOffRequest.id, request.id))
-    return actionError("iiko rejected the act. Try again in a moment.")
+    return actionError(
+      "iiko отклонил акт. Попробуйте ещё раз через некоторое время."
+    )
   }
 }
 
@@ -285,7 +332,7 @@ export async function setStaffRoleAction(input: SetStaffRoleInput) {
   const db = getServerDb()
 
   if (input.userId === context.user.id && input.role !== "admin") {
-    return actionError("You cannot remove your own admin access.")
+    return actionError("Нельзя снять с себя права администратора.")
   }
 
   const targetRows = await db
@@ -294,7 +341,7 @@ export async function setStaffRoleAction(input: SetStaffRoleInput) {
     .where(eq(user.id, input.userId))
     .limit(1)
   if (targetRows.length === 0) {
-    return actionError("That staff member no longer exists.")
+    return actionError("Этот сотрудник больше не существует.")
   }
 
   const profile = await setStaffRole(db, input)
@@ -313,7 +360,7 @@ export async function createEmployeeAction(input: CreateEmployeeInput) {
     .where(eq(user.username, username))
     .limit(1)
   if (clash.length > 0) {
-    return actionError("That табельный номер is already in use.")
+    return actionError("Этот табельный номер уже используется.")
   }
 
   const hashed = await hashPassword(input.password)
@@ -346,6 +393,127 @@ export async function createEmployeeAction(input: CreateEmployeeInput) {
   })
 
   return actionOk({ userId })
+}
+
+export async function upsertPointOfSaleAction(input: UpsertPointOfSaleInput) {
+  await requireAdmin("/admin/catalog")
+  const db = getServerDb()
+  const now = new Date()
+
+  if (input.id) {
+    const updated = await db
+      .update(pointOfSale)
+      .set({
+        name: input.name,
+        address: input.address,
+        isActive: input.isActive,
+        updatedAt: now,
+      })
+      .where(eq(pointOfSale.id, input.id))
+      .returning({ id: pointOfSale.id })
+
+    if (updated.length === 0) {
+      return actionError("Точка продаж не найдена.")
+    }
+
+    return actionOk({ id: updated[0].id })
+  }
+
+  const inserted = await db
+    .insert(pointOfSale)
+    .values({
+      name: input.name,
+      address: input.address,
+      isActive: input.isActive,
+    })
+    .returning({ id: pointOfSale.id })
+
+  return actionOk({ id: inserted[0].id })
+}
+
+export async function upsertProductCategoryAction(
+  input: UpsertProductCategoryInput
+) {
+  await requireAdmin("/admin/catalog")
+  const db = getServerDb()
+  const now = new Date()
+
+  if (input.id) {
+    const updated = await db
+      .update(productCategory)
+      .set({
+        name: input.name,
+        position: input.position,
+        updatedAt: now,
+      })
+      .where(eq(productCategory.id, input.id))
+      .returning({ id: productCategory.id })
+
+    if (updated.length === 0) {
+      return actionError("Категория продуктов не найдена.")
+    }
+
+    return actionOk({ id: updated[0].id })
+  }
+
+  const inserted = await db
+    .insert(productCategory)
+    .values({
+      name: input.name,
+      position: input.position,
+    })
+    .returning({ id: productCategory.id })
+
+  return actionOk({ id: inserted[0].id })
+}
+
+export async function upsertProductAction(input: UpsertProductInput) {
+  await requireAdmin("/admin/catalog")
+  const db = getServerDb()
+  const now = new Date()
+
+  const categoryRows = await db
+    .select({ id: productCategory.id })
+    .from(productCategory)
+    .where(eq(productCategory.id, input.categoryId))
+    .limit(1)
+  if (categoryRows.length === 0) {
+    return actionError("Выберите существующую категорию.")
+  }
+
+  if (input.id) {
+    const updated = await db
+      .update(product)
+      .set({
+        categoryId: input.categoryId,
+        name: input.name,
+        sku: input.sku,
+        unit: input.unit,
+        isActive: input.isActive,
+        updatedAt: now,
+      })
+      .where(eq(product.id, input.id))
+      .returning({ id: product.id })
+
+    if (updated.length === 0) {
+      return actionError("Продукт не найден.")
+    }
+
+    return actionOk({ id: updated[0].id })
+  }
+
+  const inserted = await db
+    .insert(product)
+    .values({
+      categoryId: input.categoryId,
+      name: input.name,
+      sku: input.sku,
+      unit: input.unit,
+      isActive: input.isActive,
+    })
+    .returning({ id: product.id })
+
+  return actionOk({ id: inserted[0].id })
 }
 
 export async function setEmployeePasswordAction(
@@ -476,7 +644,7 @@ async function loadRequests(requestId?: string) {
       requestNumber: row.requestNumber,
       status: row.status,
       productId: row.productId,
-      productName: productRow?.name ?? "Unknown product",
+      productName: productRow?.name ?? "Неизвестный продукт",
       productSku: productRow?.sku ?? "",
       unit: productRow?.unit ?? "pcs",
       categoryName: productRow?.categoryName ?? "",
@@ -539,3 +707,4 @@ export type WriteOffAnalyticsData = Awaited<
 export type StaffDirectoryData = Awaited<
   ReturnType<typeof getStaffDirectoryData>
 >
+export type CatalogAdminData = Awaited<ReturnType<typeof getCatalogAdminData>>

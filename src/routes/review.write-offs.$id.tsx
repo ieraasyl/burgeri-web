@@ -47,13 +47,13 @@ function WriteOffDetailPage() {
   if (!request) {
     return (
       <div className="rounded-2xl border border-dashed p-10 text-center">
-        <p className="font-medium">Request not found</p>
+        <p className="font-medium">Заявка не найдена</p>
         <Link
           to="/review/write-offs"
           className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
         >
           <IconArrowLeft className="size-4" />
-          Back to queue
+          Назад в очередь
         </Link>
       </div>
     )
@@ -61,7 +61,7 @@ function WriteOffDetailPage() {
 
   async function handleReview(status: "approved" | "rejected") {
     if (status === "rejected" && reviewComment.trim().length < 3) {
-      setError("Add a short reason before rejecting the request.")
+      setError("Укажите краткую причину перед отклонением заявки.")
       return
     }
 
@@ -105,7 +105,7 @@ function WriteOffDetailPage() {
         className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <IconArrowLeft className="size-4" />
-        Back to queue
+        Назад в очередь
       </Link>
 
       <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
@@ -114,7 +114,7 @@ function WriteOffDetailPage() {
             <a href={request.photoUrl} target="_blank" rel="noreferrer">
               <img
                 src={request.photoUrl}
-                alt="Write-off evidence"
+                alt="Доказательство списания"
                 className="aspect-square w-full rounded-2xl border object-cover"
               />
             </a>
@@ -142,26 +142,26 @@ function WriteOffDetailPage() {
 
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
             <DetailRow
-              label="Submitted by"
-              value={request.submitter?.name ?? "Unknown"}
+              label="Подано"
+              value={request.submitter?.name ?? "Неизвестно"}
               sub={request.submitter?.employeeId ?? undefined}
             />
             <DetailRow
-              label="Submitted at"
+              label="Дата подачи"
               value={formatDate(request.createdAt)}
             />
             <DetailRow
-              label="Write-off category"
+              label="Категория списания"
               value={request.writeOffCategoryName}
             />
             <DetailRow
-              label="Deduction"
+              label="Удержание"
               value={deductionModeLabels[request.deductionMode]}
               sub={request.chargedEmployee?.name ?? undefined}
             />
             <DetailRow
-              label="Reviewed by"
-              value={request.reviewer?.name ?? "Not reviewed"}
+              label="Проверил"
+              value={request.reviewer?.name ?? "Не проверено"}
               sub={
                 request.reviewedAt ? formatDate(request.reviewedAt) : undefined
               }
@@ -169,7 +169,7 @@ function WriteOffDetailPage() {
           </dl>
 
           <div className="mt-6 rounded-2xl border bg-card p-4">
-            <p className="text-sm font-medium">Employee comment</p>
+            <p className="text-sm font-medium">Комментарий сотрудника</p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {request.comment}
             </p>
@@ -177,7 +177,7 @@ function WriteOffDetailPage() {
 
           {request.reviewComment && (
             <div className="mt-4 rounded-2xl border bg-card p-4">
-              <p className="text-sm font-medium">Reviewer note</p>
+              <p className="text-sm font-medium">Заметка ревьюера</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {request.reviewComment}
               </p>
@@ -186,20 +186,20 @@ function WriteOffDetailPage() {
 
           {error && (
             <Alert variant="destructive" className="mt-4">
-              <AlertTitle>Something went wrong</AlertTitle>
+              <AlertTitle>Что-то пошло не так</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
           {request.status === "pending" && (
             <div className="mt-6 rounded-2xl border bg-card p-4">
-              <p className="text-sm font-medium">Decision</p>
+              <p className="text-sm font-medium">Решение</p>
               <textarea
                 value={reviewComment}
                 onChange={(event) => setReviewComment(event.target.value)}
                 rows={3}
                 maxLength={1000}
-                placeholder="Review note (required to reject)"
+                placeholder="Заметка ревьюера (обязательна при отклонении)"
                 className="mt-3 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
               />
               <div className="mt-3 flex gap-2">
@@ -215,7 +215,7 @@ function WriteOffDetailPage() {
                   ) : (
                     <IconCheck data-icon="inline-start" />
                   )}
-                  Approve
+                  Одобрить
                 </Button>
                 <Button
                   variant="destructive"
@@ -223,7 +223,7 @@ function WriteOffDetailPage() {
                   onClick={() => handleReview("rejected")}
                 >
                   <IconX data-icon="inline-start" />
-                  Reject
+                  Отклонить
                 </Button>
               </div>
             </div>
@@ -263,7 +263,7 @@ function IikoPanel({
     <div className="mt-6 rounded-2xl border bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium">iiko write-off act</p>
+          <p className="text-sm font-medium">Акт списания в iiko</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {
               iikoSyncStatusLabels[
@@ -280,7 +280,7 @@ function IikoPanel({
             ) : (
               <IconCloudUpload data-icon="inline-start" />
             )}
-            Send to iiko
+            Отправить в iiko
           </Button>
         )}
       </div>
@@ -292,7 +292,7 @@ function IikoPanel({
       ) : null}
       {isSynced && (
         <p className="mt-3 text-xs text-emerald-600 dark:text-emerald-300">
-          Stock has been written off in iiko.
+          Списание проведено в iiko.
         </p>
       )}
     </div>
@@ -337,7 +337,7 @@ function StatusBadge({ status }: { status: WriteOffStatus }) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-KZ", {
+  return new Intl.DateTimeFormat("ru-KZ", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value))

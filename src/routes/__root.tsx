@@ -16,12 +16,12 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Burgeri Ops | Product write-offs",
+        title: "Burgeri Ops | Списания продуктов",
       },
       {
         name: "description",
         content:
-          "Review, approve, and track restaurant product write-off requests.",
+          "Проверка, одобрение и учёт заявок на списание продуктов в ресторане.",
       },
     ],
     links: [
@@ -59,7 +59,7 @@ export const Route = createRootRoute({
   notFoundComponent: () => (
     <main className="container mx-auto p-4 pt-16">
       <h1>404</h1>
-      <p>The requested page could not be found.</p>
+      <p>Запрошенная страница не найдена.</p>
     </main>
   ),
   shellComponent: RootDocument,
@@ -67,7 +67,7 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <head>
         <HeadContent />
       </head>

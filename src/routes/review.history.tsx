@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import {
   deductionModeLabels,
   formatQuantity,
+  iikoSyncStatusLabels,
   writeOffStatusLabels,
 } from "@/lib/write-offs"
 import type { WriteOffDeductionMode, WriteOffStatus } from "@/lib/write-offs"
@@ -62,7 +63,7 @@ function HistoryPage() {
     <div>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Field label="Status">
+          <Field label="Статус">
             <select
               value={status}
               onChange={(event) =>
@@ -70,7 +71,7 @@ function HistoryPage() {
               }
               className={selectClass}
             >
-              <option value="all">All statuses</option>
+              <option value="all">Все статусы</option>
               {(["pending", "approved", "rejected"] as const).map((value) => (
                 <option key={value} value={value}>
                   {writeOffStatusLabels[value]}
@@ -78,13 +79,13 @@ function HistoryPage() {
               ))}
             </select>
           </Field>
-          <Field label="Point of sale">
+          <Field label="Точка продаж">
             <select
               value={location}
               onChange={(event) => setLocation(event.target.value)}
               className={selectClass}
             >
-              <option value="all">All points of sale</option>
+              <option value="all">Все точки продаж</option>
               {locationOptions.map((row) => (
                 <option key={row.id} value={row.id}>
                   {row.name}
@@ -92,13 +93,13 @@ function HistoryPage() {
               ))}
             </select>
           </Field>
-          <Field label="Product">
+          <Field label="Продукт">
             <select
               value={product}
               onChange={(event) => setProduct(event.target.value)}
               className={selectClass}
             >
-              <option value="all">All products</option>
+              <option value="all">Все продукты</option>
               {productOptions.map((row) => (
                 <option key={row.id} value={row.id}>
                   {row.name}
@@ -106,13 +107,13 @@ function HistoryPage() {
               ))}
             </select>
           </Field>
-          <Field label="Search">
+          <Field label="Поиск">
             <label className="relative block">
               <IconSearch className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Number, employee, doc id…"
+                placeholder="Номер, сотрудник, id документа…"
                 className="pl-9"
               />
             </label>
@@ -123,25 +124,25 @@ function HistoryPage() {
           disabled={visible.length === 0}
         >
           <IconDownload data-icon="inline-start" />
-          Export CSV
+          Экспорт CSV
         </Button>
       </div>
 
       <p className="mt-5 text-xs text-muted-foreground">
-        Showing {visible.length} of {requests.length} records
+        Показано {visible.length} из {requests.length} записей
       </p>
 
       <div className="mt-2 overflow-x-auto rounded-2xl border">
         <table className="w-full min-w-[960px] text-left text-sm">
           <thead className="border-b bg-muted/40">
             <tr>
-              <Th>Number</Th>
-              <Th>Submitted</Th>
-              <Th>Employee</Th>
-              <Th>Point of sale</Th>
-              <Th>Product</Th>
-              <Th>Deduction</Th>
-              <Th>Status</Th>
+              <Th>Номер</Th>
+              <Th>Подано</Th>
+              <Th>Сотрудник</Th>
+              <Th>Точка продаж</Th>
+              <Th>Продукт</Th>
+              <Th>Удержание</Th>
+              <Th>Статус</Th>
               <Th>iiko</Th>
             </tr>
           </thead>
@@ -175,7 +176,8 @@ function HistoryPage() {
                   {writeOffStatusLabels[request.status]}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {request.iikoDocumentId ?? request.iikoSyncStatus}
+                  {request.iikoDocumentId ??
+                    iikoSyncStatusLabels[request.iikoSyncStatus]}
                 </td>
               </tr>
             ))}
@@ -185,7 +187,7 @@ function HistoryPage() {
                   colSpan={8}
                   className="px-6 py-12 text-center text-muted-foreground"
                 >
-                  No records match these filters.
+                  Нет записей по этим фильтрам.
                 </td>
               </tr>
             )}
@@ -295,7 +297,7 @@ function csvCell(value: string | number) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-KZ", {
+  return new Intl.DateTimeFormat("ru-KZ", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value))

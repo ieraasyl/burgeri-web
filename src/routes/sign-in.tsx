@@ -44,11 +44,11 @@ function SignInPage() {
     setError(null)
 
     if (!normalizedEmail) {
-      setError("Enter your email address.")
+      setError("Введите адрес электронной почты.")
       return
     }
     if (!currentPassword) {
-      setError("Enter your password.")
+      setError("Введите пароль.")
       return
     }
 
@@ -62,9 +62,7 @@ function SignInPage() {
     setIsSigningIn(false)
 
     if (result.error) {
-      setError(
-        getAuthErrorMessage(result.error, "Check your email and password.")
-      )
+      setError(getAuthErrorMessage(result.error, "Проверьте email и пароль."))
       return
     }
 
@@ -77,17 +75,17 @@ function SignInPage() {
       <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-8 sm:px-6 lg:min-h-[calc(100svh-8rem)] lg:grid-cols-[minmax(0,1fr)_29rem] lg:px-8 lg:py-12">
         <section className="flex min-w-0 flex-col justify-center">
           <h1 className="max-w-3xl font-heading text-3xl font-semibold text-balance sm:text-4xl lg:text-5xl">
-            Sign in to the Burgeri write-off workspace.
+            Войдите в рабочее место списаний Burgeri.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
-            Sign in with the password assigned by your Burgeri administrator.
+            Войдите с паролем, выданным администратором Burgeri.
           </p>
 
           <dl className="mt-10 hidden max-w-md gap-5 lg:grid">
             {[
-              ["01", "Review photo-backed write-offs"],
-              ["02", "Approve or reject in one queue"],
-              ["03", "Push approved acts to iiko"],
+              ["01", "Проверка списаний с фото"],
+              ["02", "Одобрение и отклонение в одной очереди"],
+              ["03", "Отправка одобренных актов в iiko"],
             ].map(([marker, label]) => (
               <div key={marker} className="flex items-center gap-4">
                 <span className="font-heading text-xl font-semibold text-primary/40 tabular-nums">
@@ -102,9 +100,9 @@ function SignInPage() {
         <section className="flex items-center">
           <Card className="w-full rounded-md" size="sm">
             <CardHeader>
-              <CardTitle>Sign in</CardTitle>
+              <CardTitle>Вход</CardTitle>
               <CardDescription>
-                Use your work email to reach the write-off workspace.
+                Используйте рабочий email для доступа к списаниям.
               </CardDescription>
             </CardHeader>
 
@@ -112,7 +110,7 @@ function SignInPage() {
               {error && (
                 <Alert variant="destructive">
                   <IconAlertCircle />
-                  <AlertTitle>Sign-in failed</AlertTitle>
+                  <AlertTitle>Не удалось войти</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
@@ -134,7 +132,7 @@ function SignInPage() {
                     />
                   </Field>
                   <Field data-invalid={Boolean(error)}>
-                    <FieldLabel htmlFor="sign-in-password">Password</FieldLabel>
+                    <FieldLabel htmlFor="sign-in-password">Пароль</FieldLabel>
                     <Input
                       id="sign-in-password"
                       type="password"
@@ -142,7 +140,7 @@ function SignInPage() {
                       value={password}
                       disabled={isSigningIn}
                       aria-invalid={Boolean(error)}
-                      placeholder="Your password"
+                      placeholder="Ваш пароль"
                       onChange={(event) => setPassword(event.target.value)}
                     />
                   </Field>
@@ -155,7 +153,7 @@ function SignInPage() {
                     ) : (
                       <IconLock data-icon="inline-start" />
                     )}
-                    Sign in
+                    Войти
                   </Button>
                 </FieldGroup>
               </form>
@@ -163,8 +161,8 @@ function SignInPage() {
 
             <CardFooter className="border-t">
               <p className="text-sm leading-6 text-muted-foreground">
-                By continuing, use this account only for your own restaurant
-                write-off submissions and reviews.
+                Продолжая, используйте эту учётную запись только для подачи и
+                проверки списаний в вашем ресторане.
               </p>
             </CardFooter>
           </Card>

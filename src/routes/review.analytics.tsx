@@ -22,19 +22,23 @@ function AnalyticsPage() {
   return (
     <div className="flex flex-col gap-8">
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="All write-offs" value={data.byStatus.total} />
-        <StatCard label="Pending" value={data.byStatus.pending} tone="amber" />
+        <StatCard label="Все списания" value={data.byStatus.total} />
         <StatCard
-          label="Approved"
+          label="На рассмотрении"
+          value={data.byStatus.pending}
+          tone="amber"
+        />
+        <StatCard
+          label="Одобрено"
           value={data.byStatus.approved}
           tone="green"
         />
-        <StatCard label="Rejected" value={data.byStatus.rejected} tone="red" />
+        <StatCard label="Отклонено" value={data.byStatus.rejected} tone="red" />
       </section>
 
       <section className="rounded-2xl border bg-card p-5">
         <h2 className="font-heading text-lg font-semibold">
-          Submissions · last 14 days
+          Заявки · последние 14 дней
         </h2>
         <div className="mt-5 flex items-end gap-1.5">
           {data.trend.map((day) => (
@@ -62,34 +66,40 @@ function AnalyticsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <BarSection
-          title="By point of sale"
+          title="По точке продаж"
           rows={data.byLocation}
           max={locationMax}
         />
-        <BarSection title="By product" rows={data.byProduct} max={productMax} />
         <BarSection
-          title="By write-off category"
+          title="По продукту"
+          rows={data.byProduct}
+          max={productMax}
+        />
+        <BarSection
+          title="По категории списания"
           rows={data.byCategory}
           max={categoryMax}
         />
 
         <section className="rounded-2xl border bg-card p-5">
           <h2 className="font-heading text-lg font-semibold">
-            Deduction split
+            Распределение удержаний
           </h2>
           <div className="mt-4 flex flex-col gap-3">
             <BarRow
-              label="No employee deduction"
+              label="Без удержания с сотрудника"
               value={data.byDeduction.none}
               max={Math.max(1, deductionTotal)}
             />
             <BarRow
-              label="Deducted from employee"
+              label="Удержано с сотрудника"
               value={data.byDeduction.employee}
               max={Math.max(1, deductionTotal)}
             />
           </div>
-          <h3 className="mt-6 text-sm font-medium">Top charged employees</h3>
+          <h3 className="mt-6 text-sm font-medium">
+            Топ сотрудников по удержаниям
+          </h3>
           <div className="mt-3 flex flex-col gap-2">
             {data.topChargedEmployees.length === 0 ? (
               <Empty />
@@ -108,20 +118,22 @@ function AnalyticsPage() {
         </section>
 
         <section className="rounded-2xl border bg-card p-5">
-          <h2 className="font-heading text-lg font-semibold">iiko sync</h2>
+          <h2 className="font-heading text-lg font-semibold">
+            Синхронизация с iiko
+          </h2>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <SyncTile label="Not started" value={data.iikoSync.not_started} />
+            <SyncTile label="Не начато" value={data.iikoSync.not_started} />
             <SyncTile
-              label="Queued"
+              label="В очереди"
               value={data.iikoSync.queued}
               tone="amber"
             />
             <SyncTile
-              label="Synced"
+              label="Отправлено"
               value={data.iikoSync.synced}
               tone="green"
             />
-            <SyncTile label="Failed" value={data.iikoSync.failed} tone="red" />
+            <SyncTile label="Ошибка" value={data.iikoSync.failed} tone="red" />
           </div>
         </section>
       </div>
@@ -232,5 +244,5 @@ function SyncTile({
 }
 
 function Empty() {
-  return <p className="text-sm text-muted-foreground">No data yet.</p>
+  return <p className="text-sm text-muted-foreground">Пока нет данных.</p>
 }

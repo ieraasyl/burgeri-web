@@ -10,6 +10,9 @@ import {
   setEmployeePasswordSchema,
   setStaffRoleSchema,
   syncWriteOffToIikoSchema,
+  upsertPointOfSaleSchema,
+  upsertProductCategorySchema,
+  upsertProductSchema,
 } from "@/lib/validation"
 import type {
   CreateEmployeeInput,
@@ -17,6 +20,9 @@ import type {
   SetEmployeePasswordInput,
   SetStaffRoleInput,
   SyncWriteOffToIikoInput,
+  UpsertPointOfSaleInput,
+  UpsertProductCategoryInput,
+  UpsertProductInput,
 } from "@/lib/validation"
 
 export const reviewWriteOffRequest = createServerFn({ method: "POST" })
@@ -67,6 +73,35 @@ export const setEmployeePassword = createServerFn({ method: "POST" })
     })
   )
 
+export const upsertPointOfSale = createServerFn({ method: "POST" })
+  .validator((data: UpsertPointOfSaleInput) => data)
+  .handler(async ({ data }) =>
+    withValidation(upsertPointOfSaleSchema, data, async (input) => {
+      const { upsertPointOfSaleAction } =
+        await import("@/lib/write-offs.server")
+      return upsertPointOfSaleAction(input)
+    })
+  )
+
+export const upsertProductCategory = createServerFn({ method: "POST" })
+  .validator((data: UpsertProductCategoryInput) => data)
+  .handler(async ({ data }) =>
+    withValidation(upsertProductCategorySchema, data, async (input) => {
+      const { upsertProductCategoryAction } =
+        await import("@/lib/write-offs.server")
+      return upsertProductCategoryAction(input)
+    })
+  )
+
+export const upsertProduct = createServerFn({ method: "POST" })
+  .validator((data: UpsertProductInput) => data)
+  .handler(async ({ data }) =>
+    withValidation(upsertProductSchema, data, async (input) => {
+      const { upsertProductAction } = await import("@/lib/write-offs.server")
+      return upsertProductAction(input)
+    })
+  )
+
 async function withValidation<TInput, TOutput>(
   schema: z.ZodType<TInput>,
   data: unknown,
@@ -76,7 +111,7 @@ async function withValidation<TInput, TOutput>(
 
   if (!parsed.success) {
     return actionError(
-      "Check the highlighted fields.",
+      "Проверьте выделенные поля.",
       getZodFieldErrors(parsed.error)
     )
   }

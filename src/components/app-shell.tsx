@@ -15,7 +15,7 @@ import { signOut, useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { href: "/review/write-offs", label: "Reviewer queue" },
+  { href: "/review/write-offs", label: "Очередь ревьюера" },
 ] as const
 
 function useHideOnScroll() {
@@ -84,13 +84,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                 Burgeri Ops
               </span>
               <span className="hidden text-xs text-muted-foreground sm:block">
-                Fast, accountable write-offs
+                Быстрые и прозрачные списания
               </span>
             </span>
           </Link>
 
           <nav
-            aria-label="Main navigation"
+            aria-label="Основная навигация"
             className="hidden items-center gap-1 md:flex"
           >
             {navItems.map((item) => (
@@ -123,13 +123,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             to="/privacy"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Privacy
+            Конфиденциальность
           </Link>
           <Link
             to="/terms"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Terms
+            Условия
           </Link>
         </div>
       </footer>
@@ -146,7 +146,7 @@ function MobileNav() {
         type="button"
         variant="ghost"
         size="icon"
-        aria-label={isOpen ? "Close menu" : "Open menu"}
+        aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
       >
@@ -155,7 +155,7 @@ function MobileNav() {
       {isOpen && (
         <div className="absolute inset-x-0 top-full border-b bg-background shadow-sm">
           <nav
-            aria-label="Mobile navigation"
+            aria-label="Мобильная навигация"
             className="mx-auto flex w-full max-w-7xl flex-col items-end gap-1 px-4 py-3 text-right sm:px-6"
           >
             {navItems.map((item) => (
@@ -215,7 +215,7 @@ function SessionAuthControls() {
     return (
       <span className="inline-flex h-8 items-center gap-1.5 rounded-4xl px-3 text-sm text-muted-foreground">
         <IconLoader2 className="animate-spin" />
-        <span className="hidden sm:inline">Checking</span>
+        <span className="hidden sm:inline">Проверка…</span>
       </span>
     )
   }
@@ -250,7 +250,7 @@ function SessionAuthControls() {
         ) : (
           <IconLogout data-icon="inline-start" />
         )}
-        <span className="hidden sm:inline">Sign out</span>
+        <span className="hidden sm:inline">Выйти</span>
       </Button>
     </>
   )
@@ -259,7 +259,7 @@ function SessionAuthControls() {
 function GuestAuthControls() {
   return (
     <Link to="/sign-in" className={buttonVariants({ size: "sm" })}>
-      Sign in
+      Войти
     </Link>
   )
 }
@@ -285,7 +285,7 @@ function MobileAuthControls({ onNavigate }: { onNavigate: () => void }) {
     return (
       <span className="inline-flex flex-row-reverse items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
         <IconLoader2 className="animate-spin" />
-        Checking
+        Проверка…
       </span>
     )
   }
@@ -298,7 +298,7 @@ function MobileAuthControls({ onNavigate }: { onNavigate: () => void }) {
         onClick={onNavigate}
       >
         <IconUserCircle />
-        Sign in
+        Войти
       </Link>
     )
   }
@@ -326,7 +326,7 @@ function MobileAuthControls({ onNavigate }: { onNavigate: () => void }) {
         ) : (
           <IconLogout />
         )}
-        Sign out
+        Выйти
       </button>
     </>
   )

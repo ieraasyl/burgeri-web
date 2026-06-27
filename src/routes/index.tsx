@@ -43,11 +43,12 @@ function EmployeeNotice() {
         <IconDeviceMobile className="size-7" />
       </span>
       <h1 className="mt-5 font-heading text-3xl font-semibold text-balance">
-        This workspace is for reviewers
+        Это рабочее место для ревьюеров
       </h1>
       <p className="mt-3 leading-7 text-muted-foreground">
-        Employees submit product write-offs from the Burgeri mobile app. If you
-        review write-offs, ask an administrator to grant you reviewer access.
+        Сотрудники подают заявки на списание через мобильное приложение Burgeri.
+        Если вы проверяете списания, попросите администратора назначить вам
+        права ревьюера.
       </p>
       <Button
         type="button"
@@ -61,7 +62,7 @@ function EmployeeNotice() {
         ) : (
           <IconLogout data-icon="inline-start" />
         )}
-        Sign out
+        Выйти
       </Button>
     </div>
   )

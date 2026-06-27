@@ -10,9 +10,12 @@ import {
 const employeeIdSchema = z
   .string()
   .trim()
-  .min(2, "Use at least 2 characters.")
-  .max(40, "Keep it under 40 characters.")
-  .regex(/^[A-Za-z0-9_-]+$/, "Use letters, numbers, hyphens, or underscores.")
+  .min(2, "Используйте не менее 2 символов.")
+  .max(40, "Не более 40 символов.")
+  .regex(
+    /^[A-Za-z0-9_-]+$/,
+    "Используйте буквы, цифры, дефис или подчёркивание."
+  )
 
 export const submitWriteOffSchema = z
   .object({
@@ -56,7 +59,7 @@ export const reviewWriteOffRequestSchema = z
       context.addIssue({
         code: "custom",
         path: ["reviewComment"],
-        message: "Explain why the request was rejected.",
+        message: "Укажите причину отклонения заявки.",
       })
     }
   })
@@ -71,9 +74,9 @@ export const setStaffRoleSchema = z.object({
 })
 
 export const createEmployeeSchema = z.object({
-  name: z.string().trim().min(2, "Enter a name.").max(120),
+  name: z.string().trim().min(2, "Введите имя.").max(120),
   employeeId: employeeIdSchema,
-  password: z.string().min(8, "Use at least 8 characters.").max(128),
+  password: z.string().min(8, "Используйте не менее 8 символов.").max(128),
   defaultPointOfSaleId: z
     .string()
     .trim()
@@ -83,7 +86,29 @@ export const createEmployeeSchema = z.object({
 
 export const setEmployeePasswordSchema = z.object({
   userId: z.string().min(1),
-  password: z.string().min(8, "Use at least 8 characters.").max(128),
+  password: z.string().min(8, "Используйте не менее 8 символов.").max(128),
+})
+
+export const upsertPointOfSaleSchema = z.object({
+  id: z.string().trim().optional(),
+  name: z.string().trim().min(2, "Введите название.").max(120),
+  address: z.string().trim().max(200),
+  isActive: z.boolean(),
+})
+
+export const upsertProductCategorySchema = z.object({
+  id: z.string().trim().optional(),
+  name: z.string().trim().min(2, "Введите название.").max(120),
+  position: z.coerce.number().int().min(0).max(999),
+})
+
+export const upsertProductSchema = z.object({
+  id: z.string().trim().optional(),
+  categoryId: z.string().trim().min(1, "Выберите категорию."),
+  name: z.string().trim().min(2, "Введите название.").max(120),
+  sku: z.string().trim().max(40),
+  unit: z.string().trim().min(1, "Укажите единицу измерения.").max(20),
+  isActive: z.boolean(),
 })
 
 export type SubmitWriteOffInput = z.infer<typeof submitWriteOffSchema>
@@ -94,6 +119,11 @@ export type SyncWriteOffToIikoInput = z.infer<typeof syncWriteOffToIikoSchema>
 export type SetStaffRoleInput = z.infer<typeof setStaffRoleSchema>
 export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>
 export type SetEmployeePasswordInput = z.infer<typeof setEmployeePasswordSchema>
+export type UpsertPointOfSaleInput = z.infer<typeof upsertPointOfSaleSchema>
+export type UpsertProductCategoryInput = z.infer<
+  typeof upsertProductCategorySchema
+>
+export type UpsertProductInput = z.infer<typeof upsertProductSchema>
 
 export function getZodFieldErrors(error: z.ZodError) {
   const fieldErrors: Record<string, string[]> = {}

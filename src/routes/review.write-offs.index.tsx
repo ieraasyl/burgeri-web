@@ -127,7 +127,7 @@ function WriteOffReviewPage() {
   ) {
     const reviewComment = (comments[request.id] || "").trim()
     if (status === "rejected" && reviewComment.length < 3) {
-      setActionError("Add a short reason before rejecting the request.")
+      setActionError("Укажите краткую причину перед отклонением заявки.")
       return
     }
 
@@ -167,22 +167,22 @@ function WriteOffReviewPage() {
   return (
     <div>
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="All requests" value={stats.total} />
-        <StatCard label="Pending" value={stats.pending} tone="amber" />
-        <StatCard label="Approved" value={stats.approved} tone="green" />
-        <StatCard label="Rejected" value={stats.rejected} tone="red" />
+        <StatCard label="Все заявки" value={stats.total} />
+        <StatCard label="На рассмотрении" value={stats.pending} tone="amber" />
+        <StatCard label="Одобрено" value={stats.approved} tone="green" />
+        <StatCard label="Отклонено" value={stats.rejected} tone="red" />
       </section>
 
       <section className="my-8 rounded-2xl border bg-card p-5">
         <div className="flex items-center gap-2">
           <IconBuildingStore className="text-primary" />
           <h2 className="font-heading text-lg font-semibold">
-            Point-of-sale check-in
+            Сводка по точкам продаж
           </h2>
         </div>
         {locationStats.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">
-            No points of sale have submitted requests yet.
+            Пока нет заявок от точек продаж.
           </p>
         ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -198,7 +198,7 @@ function WriteOffReviewPage() {
               >
                 <p className="truncate text-sm font-medium">{location.name}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {location.pending} pending · {location.total} total
+                  {location.pending} на рассмотрении · {location.total} всего
                 </p>
               </button>
             ))}
@@ -221,7 +221,7 @@ function WriteOffReviewPage() {
                       : "hover:bg-muted"
                   }`}
                 >
-                  {status === "all" ? "All" : writeOffStatusLabels[status]}
+                  {status === "all" ? "Все" : writeOffStatusLabels[status]}
                   <span className="ml-1.5 opacity-70">
                     {status === "all" ? stats.total : stats[status]}
                   </span>
@@ -234,7 +234,7 @@ function WriteOffReviewPage() {
             <Input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search number, employee, POS, product…"
+              placeholder="Поиск: номер, сотрудник, точка, продукт…"
               className="pl-9"
             />
           </label>
@@ -242,40 +242,40 @@ function WriteOffReviewPage() {
 
         {actionError && (
           <Alert variant="destructive" className="mt-4">
-            <AlertTitle>Could not update the request</AlertTitle>
+            <AlertTitle>Не удалось обновить заявку</AlertTitle>
             <AlertDescription>{actionError}</AlertDescription>
           </Alert>
         )}
 
         <p className="mt-5 text-xs text-muted-foreground">
-          Showing {visibleRequests.length} of {requests.length} requests
+          Показано {visibleRequests.length} из {requests.length} заявок
         </p>
 
         <div className="mt-2 overflow-x-auto rounded-2xl border">
           <table className="w-full min-w-[1040px] text-left text-sm">
             <thead className="border-b bg-muted/40">
               <tr>
-                <th className="px-4 py-3 font-medium">Evidence</th>
+                <th className="px-4 py-3 font-medium">Фото</th>
                 <SortableHeader
-                  label="Submitted"
+                  label="Подано"
                   sortKey="createdAt"
                   sort={sort}
                   onSort={toggleSort}
                 />
                 <SortableHeader
-                  label="Point of sale"
+                  label="Точка продаж"
                   sortKey="pointOfSaleName"
                   sort={sort}
                   onSort={toggleSort}
                 />
-                <th className="px-4 py-3 font-medium">Details</th>
+                <th className="px-4 py-3 font-medium">Детали</th>
                 <SortableHeader
-                  label="Status"
+                  label="Статус"
                   sortKey="status"
                   sort={sort}
                   onSort={toggleSort}
                 />
-                <th className="px-4 py-3 font-medium">Review</th>
+                <th className="px-4 py-3 font-medium">Решение</th>
               </tr>
             </thead>
             <tbody>
@@ -290,14 +290,14 @@ function WriteOffReviewPage() {
                       <Link
                         to="/review/write-offs/$id"
                         params={{ id: request.id }}
-                        aria-label="Open request detail"
+                        aria-label="Открыть заявку"
                       >
                         <Evidence url={request.photoUrl} />
                       </Link>
                     </td>
                     <td className="px-4 py-4">
                       <p className="font-medium">
-                        {request.submitter?.name ?? "Unknown user"}
+                        {request.submitter?.name ?? "Неизвестный пользователь"}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {request.requestNumber} ·{" "}
@@ -327,7 +327,7 @@ function WriteOffReviewPage() {
                         params={{ id: request.id }}
                         className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                       >
-                        Open detail
+                        Открыть детали
                         <IconExternalLink className="size-3.5" />
                       </Link>
                     </td>
@@ -352,7 +352,7 @@ function WriteOffReviewPage() {
                             }
                             rows={2}
                             maxLength={1000}
-                            placeholder="Review note (required to reject)"
+                            placeholder="Заметка ревьюера (обязательна при отклонении)"
                             className="w-full resize-none rounded-md border border-input bg-background px-2.5 py-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
                           />
                           <div className="flex gap-2">
@@ -366,7 +366,7 @@ function WriteOffReviewPage() {
                               ) : (
                                 <IconCheck />
                               )}
-                              Approve
+                              Одобрить
                             </Button>
                             <Button
                               size="sm"
@@ -375,13 +375,13 @@ function WriteOffReviewPage() {
                               onClick={() => handleReview(request, "rejected")}
                             >
                               <IconX />
-                              Reject
+                              Отклонить
                             </Button>
                           </div>
                         </div>
                       ) : (
                         <div className="text-xs text-muted-foreground">
-                          <p>{request.reviewer?.name ?? "Reviewer"}</p>
+                          <p>{request.reviewer?.name ?? "Ревьюер"}</p>
                           {request.reviewComment && (
                             <p className="mt-1 text-foreground">
                               {request.reviewComment}
@@ -399,7 +399,7 @@ function WriteOffReviewPage() {
                     colSpan={6}
                     className="px-6 py-12 text-center text-muted-foreground"
                   >
-                    No requests match this view.
+                    Нет заявок по этим фильтрам.
                   </td>
                 </tr>
               )}
@@ -494,7 +494,7 @@ function StatusBadge({ status }: { status: WriteOffStatus }) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-KZ", {
+  return new Intl.DateTimeFormat("ru-KZ", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value))

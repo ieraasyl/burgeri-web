@@ -67,7 +67,7 @@ function AccountPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <dl className="grid gap-4 sm:grid-cols-2">
-            <ProfileRow label="Role" value={userRoleLabels[account.role]} />
+            <ProfileRow label="Роль" value={userRoleLabels[account.role]} />
           </dl>
 
           <div className="flex flex-wrap gap-2">
@@ -78,14 +78,14 @@ function AccountPage() {
                   className={buttonVariants({ size: "sm" })}
                 >
                   <IconClipboardCheck data-icon="inline-start" />
-                  Review queue
+                  Очередь на проверку
                 </Link>
                 <Link
                   to="/review/analytics"
                   className={buttonVariants({ variant: "outline", size: "sm" })}
                 >
                   <IconChartBar data-icon="inline-start" />
-                  Analytics
+                  Аналитика
                 </Link>
               </>
             )}
@@ -95,7 +95,7 @@ function AccountPage() {
                 className={buttonVariants({ variant: "outline", size: "sm" })}
               >
                 <IconUsersGroup data-icon="inline-start" />
-                Staff & roles
+                Персонал и роли
               </Link>
             )}
           </div>
@@ -113,7 +113,7 @@ function AccountPage() {
             ) : (
               <IconLogout data-icon="inline-start" />
             )}
-            Sign out
+            Выйти
           </Button>
         </CardContent>
       </Card>
