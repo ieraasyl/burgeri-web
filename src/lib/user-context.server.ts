@@ -3,14 +3,14 @@ import "@tanstack/react-start/server-only"
 import { redirect } from "@tanstack/react-router"
 import { getRequest } from "@tanstack/react-start/server"
 
-import { getStudentProfile } from "@/db/queries"
+import { ensureStaffProfile } from "@/db/queries"
 import { getSession } from "@/lib/auth.server"
 import { getServerDb } from "@/lib/db.server"
 
 export interface CurrentUserContext {
   session: NonNullable<Awaited<ReturnType<typeof getSession>>>
   user: NonNullable<Awaited<ReturnType<typeof getSession>>>["user"]
-  profile: Awaited<ReturnType<typeof getStudentProfile>>
+  profile: NonNullable<Awaited<ReturnType<typeof ensureStaffProfile>>>
 }
 
 export async function getCurrentUserContext(): Promise<CurrentUserContext | null> {
@@ -22,7 +22,11 @@ export async function getCurrentUserContext(): Promise<CurrentUserContext | null
   }
 
   const db = getServerDb()
-  const profile = await getStudentProfile(db, session.user.id)
+  const profile = await ensureStaffProfile(db, session.user.id)
+
+  if (!profile) {
+    return null
+  }
 
   return {
     session,
@@ -46,16 +50,11 @@ export async function requireUser(redirectTo = getCurrentPath()) {
   return context
 }
 
-export async function requireCompletedProfile(redirectTo = getCurrentPath()) {
+export async function requireReviewer(redirectTo = getCurrentPath()) {
   const context = await requireUser(redirectTo)
 
-  if (!context.profile?.onboardingCompleted) {
-    throw redirect({
-      to: "/onboarding",
-      search: {
-        redirect: redirectTo,
-      },
-    })
+  if (context.profile.role !== "reviewer" && context.profile.role !== "admin") {
+    throw redirect({ to: "/write-offs" })
   }
 
   return context
@@ -64,32 +63,11 @@ export async function requireCompletedProfile(redirectTo = getCurrentPath()) {
 export async function requireAdmin(redirectTo = getCurrentPath()) {
   const context = await requireUser(redirectTo)
 
-  if (context.profile?.role !== "admin") {
-    throw redirect({
-      to: context.profile?.onboardingCompleted ? "/account" : "/onboarding",
-      search: context.profile?.onboardingCompleted
-        ? undefined
-        : { redirect: "/admin" },
-    })
+  if (context.profile.role !== "admin") {
+    throw redirect({ to: "/write-offs" })
   }
 
   return context
-}
-
-export async function requireReviewer(redirectTo = getCurrentPath()) {
-  const context = await requireUser(redirectTo)
-
-  if (context.profile?.role !== "mentor" && context.profile?.role !== "admin") {
-    throw redirect({
-      to: "/write-offs",
-    })
-  }
-
-  return context
-}
-
-export async function requireOnboardingUser() {
-  return requireUser("/onboarding")
 }
 
 export async function getViewerState() {
@@ -98,8 +76,10 @@ export async function getViewerState() {
   return {
     userId: context?.user.id,
     isSignedIn: Boolean(context),
-    onboardingCompleted: Boolean(context?.profile?.onboardingCompleted),
-    role: context?.profile?.role ?? null,
+    role: context?.profile.role ?? null,
+    isReviewer:
+      context?.profile.role === "reviewer" || context?.profile.role === "admin",
+    isAdmin: context?.profile.role === "admin",
   }
 }
 

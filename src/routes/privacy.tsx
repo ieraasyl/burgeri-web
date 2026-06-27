@@ -21,11 +21,12 @@ function PrivacyPage() {
             What We Collect
           </h2>
           <p className="mt-2">
-            Mentoria Hub collects the information needed to provide student
-            opportunity and course features, such as your name, email address,
-            account login details, saved opportunities, and course progress. If
-            you sign in with Google, we use your Google account only to
-            authenticate you and identify your account.
+            Burgeri Ops collects the information needed to record and review
+            product write-offs, such as your name, work email address, account
+            login details, the role assigned to you, and the write-off requests
+            and evidence photos you submit or review. If you sign in with
+            Google, we use your Google account only to authenticate you and
+            identify your account.
           </p>
         </section>
 
@@ -34,10 +35,10 @@ function PrivacyPage() {
             How We Use Information
           </h2>
           <p className="mt-2">
-            We use your information to create and secure your account, show
-            relevant opportunities and courses, save your preferences, maintain
-            the service, and communicate essential account information. We do
-            not sell your personal information.
+            We use your information to create and secure your account, process
+            and review write-off requests, keep a history of write-offs for
+            accounting and iiko, maintain the service, and communicate essential
+            account information. We do not sell your personal information.
           </p>
         </section>
 
@@ -47,8 +48,9 @@ function PrivacyPage() {
           </h2>
           <p className="mt-2">
             We share information only with service providers needed to operate
-            Mentoria Hub, when required by law, or with your consent. Google
-            user data is not shared for advertising purposes.
+            Burgeri Ops (including the iiko inventory system), when required by
+            law, or with your consent. Google user data is not shared for
+            advertising purposes.
           </p>
         </section>
 
@@ -85,7 +87,7 @@ function PrivacyPage() {
             Contact
           </h2>
           <p className="mt-2">
-            For questions about this policy, contact Mentoria Hub at{" "}
+            For questions about this policy, contact Burgeri Ops at{" "}
             <a
               href="mailto:contact@example.com"
               className="font-medium text-primary hover:underline"

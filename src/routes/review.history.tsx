@@ -1,0 +1,281 @@
+import { IconDownload, IconSearch } from "@tabler/icons-react"
+import { createFileRoute } from "@tanstack/react-router"
+import { createServerFn } from "@tanstack/react-start"
+import { useMemo, useState } from "react"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  deductionTypeLabels,
+  productTypeLabels,
+  restaurantLocations,
+  writeOffStatusLabels,
+} from "@/lib/write-offs"
+import type { WriteOffStatus } from "@/lib/write-offs"
+
+const getHistory = createServerFn({ method: "GET" }).handler(async () => {
+  const { getWriteOffHistoryData } = await import("@/lib/write-offs.server")
+  return getWriteOffHistoryData()
+})
+
+export const Route = createFileRoute("/review/history")({
+  loader: () => getHistory(),
+  component: HistoryPage,
+})
+
+type HistoryRequest = ReturnType<typeof Route.useLoaderData>["requests"][number]
+type StatusFilter = "all" | WriteOffStatus
+
+function HistoryPage() {
+  const { requests } = Route.useLoaderData()
+  const [status, setStatus] = useState<StatusFilter>("all")
+  const [location, setLocation] = useState("all")
+  const [product, setProduct] = useState("all")
+  const [search, setSearch] = useState("")
+
+  const visible = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase()
+    return requests.filter((request) => {
+      if (status !== "all" && request.status !== status) return false
+      if (location !== "all" && request.locationId !== location) return false
+      if (product !== "all" && request.productType !== product) return false
+      if (!query) return true
+      return [
+        request.submitter?.name,
+        request.submitter?.email,
+        request.locationName,
+        request.comment,
+        request.iikoDocumentId,
+      ].some((value) => value?.toLocaleLowerCase().includes(query))
+    })
+  }, [requests, status, location, product, search])
+
+  function handleExport() {
+    downloadCsv(visible)
+  }
+
+  return (
+    <div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Field label="Status">
+            <select
+              value={status}
+              onChange={(event) =>
+                setStatus(event.target.value as StatusFilter)
+              }
+              className={selectClass}
+            >
+              <option value="all">All statuses</option>
+              {(["pending", "approved", "rejected"] as const).map((value) => (
+                <option key={value} value={value}>
+                  {writeOffStatusLabels[value]}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Restaurant">
+            <select
+              value={location}
+              onChange={(event) => setLocation(event.target.value)}
+              className={selectClass}
+            >
+              <option value="all">All restaurants</option>
+              {restaurantLocations.map((row) => (
+                <option key={row.id} value={row.id}>
+                  {row.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Product">
+            <select
+              value={product}
+              onChange={(event) => setProduct(event.target.value)}
+              className={selectClass}
+            >
+              <option value="all">All products</option>
+              {Object.entries(productTypeLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Search">
+            <label className="relative block">
+              <IconSearch className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Employee, note, doc id…"
+                className="pl-9"
+              />
+            </label>
+          </Field>
+        </div>
+        <Button onClick={handleExport} disabled={visible.length === 0}>
+          <IconDownload data-icon="inline-start" />
+          Export CSV
+        </Button>
+      </div>
+
+      <p className="mt-5 text-xs text-muted-foreground">
+        Showing {visible.length} of {requests.length} records
+      </p>
+
+      <div className="mt-2 overflow-x-auto rounded-2xl border">
+        <table className="w-full min-w-[920px] text-left text-sm">
+          <thead className="border-b bg-muted/40">
+            <tr>
+              <Th>Submitted</Th>
+              <Th>Employee</Th>
+              <Th>Restaurant</Th>
+              <Th>Product</Th>
+              <Th>Deduction</Th>
+              <Th>Status</Th>
+              <Th>Reviewer</Th>
+              <Th>iiko</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {visible.map((request) => (
+              <tr
+                key={request.id}
+                className="border-b align-top last:border-0 hover:bg-muted/20"
+              >
+                <td className="px-4 py-3 text-muted-foreground">
+                  {formatDate(request.createdAt)}
+                </td>
+                <td className="px-4 py-3">{request.submitter?.name ?? "—"}</td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {request.locationName}
+                </td>
+                <td className="px-4 py-3">
+                  {productTypeLabels[request.productType]} · {request.quantity}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {deductionTypeLabels[request.deductionType]}
+                  {request.chargedEmployee
+                    ? ` · ${request.chargedEmployee.name}`
+                    : ""}
+                </td>
+                <td className="px-4 py-3">
+                  {writeOffStatusLabels[request.status]}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {request.reviewer?.name ?? "—"}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {request.iikoDocumentId ?? request.iikoSyncStatus}
+                </td>
+              </tr>
+            ))}
+            {visible.length === 0 && (
+              <tr>
+                <td
+                  colSpan={8}
+                  className="px-6 py-12 text-center text-muted-foreground"
+                >
+                  No records match these filters.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="grid gap-1.5">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      {children}
+    </div>
+  )
+}
+
+function Th({ children }: { children: React.ReactNode }) {
+  return <th className="px-4 py-3 font-medium">{children}</th>
+}
+
+function downloadCsv(rows: HistoryRequest[]) {
+  const header = [
+    "id",
+    "submitted_at",
+    "employee_name",
+    "employee_email",
+    "restaurant",
+    "product",
+    "quantity",
+    "deduction",
+    "charged_employee",
+    "status",
+    "reviewer",
+    "reviewed_at",
+    "review_comment",
+    "iiko_status",
+    "iiko_document_id",
+    "comment",
+  ]
+  const lines = rows.map((request) =>
+    [
+      request.id,
+      request.createdAt,
+      request.submitter?.name ?? "",
+      request.submitter?.email ?? "",
+      request.locationName,
+      productTypeLabels[request.productType as keyof typeof productTypeLabels],
+      request.quantity,
+      deductionTypeLabels[
+        request.deductionType as keyof typeof deductionTypeLabels
+      ],
+      request.chargedEmployee?.name ?? "",
+      request.status,
+      request.reviewer?.name ?? "",
+      request.reviewedAt ?? "",
+      request.reviewComment ?? "",
+      request.iikoSyncStatus,
+      request.iikoDocumentId ?? "",
+      request.comment,
+    ]
+      .map(csvCell)
+      .join(",")
+  )
+  const csv = [header.join(","), ...lines].join("\r\n")
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = `write-offs-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+function csvCell(value: string | number) {
+  const text = String(value)
+  if (/[",\r\n]/.test(text)) {
+    return `"${text.replaceAll('"', '""')}"`
+  }
+  return text
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-KZ", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value))
+}
+
+const selectClass =
+  "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"

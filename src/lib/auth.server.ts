@@ -76,7 +76,7 @@ function createAuth() {
       },
     }),
     secret,
-    appName: "Mentoria Hub",
+    appName: "Burgeri Ops",
     baseURL: url,
     ...(socialProviders && { socialProviders }),
     plugins: [
