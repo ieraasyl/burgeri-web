@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "burgeri-web",
+  // Set this to today's date
+  "compatibility_date": "2026-06-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "enabled": true,
+  },
+  "workers_dev": true,
+  "preview_urls": true,
+  "d1_databases": [
+    {
+      "binding": "burgeri_db",
+      "database_name": "burgeri-web-db",
+      // Replace after running: pnpm wrangler d1 create burgeri-web-db
+      "database_id": "replace-with-your-d1-database-id",
+      "migrations_dir": "drizzle",
+    },
+  ],
+}
