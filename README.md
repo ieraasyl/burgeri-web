@@ -37,8 +37,8 @@ employee mobile credentials from `/admin`.
 ## Tech
 
 React 19, TypeScript, TanStack Start + Router, Tailwind CSS v4, Better Auth
-(email OTP/Google for web, username/password + Expo cookies for mobile),
-Drizzle ORM, and Cloudflare Workers + D1.
+(email/password for web, username/password + Expo cookies for mobile), Drizzle
+ORM, and Cloudflare Workers + D1.
 
 The iiko integration is a mock adapter ([`src/lib/iiko.server.ts`](./src/lib/iiko.server.ts))
 that builds a production-shaped write-off act and returns a document id; wire in
@@ -62,10 +62,8 @@ real iiko Server API credentials to go live.
 
 ### Seeded accounts
 
-`pnpm db:seed:local` creates staff, catalog data, mobile employee credentials,
-and ~10 sample requests. Web reviewers sign in with email OTP; when Google Apps
-Script email delivery is not configured the OTP is printed to the dev server
-console.
+`pnpm db:seed:local` creates staff, catalog data, password credentials, and ~10
+sample requests. Web reviewers sign in with email/password.
 
 | Email | Role |
 | --- | --- |
@@ -74,8 +72,8 @@ console.
 | `manager@burgeri.kz` | reviewer |
 
 Seeded mobile employee logins use the employee id as username, for example
-`EMP-1001`, with password `Burgeri123!` by default. Override that seed password
-with `SEED_EMPLOYEE_PASSWORD` when running `pnpm db:seed:*`.
+`EMP-1001`. Seeded web and mobile passwords default to `Burgeri123!`. Override
+that seed password with `SEED_STAFF_PASSWORD` when running `pnpm db:seed:*`.
 
 ## Notes
 

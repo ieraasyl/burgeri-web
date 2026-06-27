@@ -122,11 +122,11 @@ function AdminPage() {
       <section className="mt-4 border-b pb-6">
         <p className="text-sm font-medium text-primary">Admin</p>
         <h1 className="mt-2 font-heading text-4xl font-semibold text-balance">
-          Staff & employee logins
+          Staff & password logins
         </h1>
         <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">
-          Create mobile logins for employees, reset passwords, and grant
-          reviewer access.
+          Create employee accounts, reset staff passwords, and grant reviewer
+          access.
         </p>
       </section>
 
@@ -227,9 +227,10 @@ function AdminPage() {
                   </p>
                 </td>
                 <td className="px-4 py-3">
-                  <p>{member.employeeId ?? "—"}</p>
+                  <p>{member.email}</p>
                   <p className="text-xs text-muted-foreground">
-                    {member.hasLogin ? "Mobile login active" : "No login"}
+                    {member.employeeId ?? "No employee id"} ·{" "}
+                    {member.hasLogin ? "Password active" : "No password"}
                   </p>
                 </td>
                 <td className="px-4 py-3">

@@ -19,9 +19,12 @@ const isRemote = process.argv.includes("--remote")
 const mode = isRemote ? "--remote" : "--local"
 
 const accountCreatedAt = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-const demoEmployeePassword = process.env.SEED_EMPLOYEE_PASSWORD ?? "Burgeri123!"
-const demoEmployeePasswordHash = await hashPassword(demoEmployeePassword)
-const seedCredentialUsers = seedUsers.filter((row) => row.username)
+const demoStaffPassword =
+  process.env.SEED_STAFF_PASSWORD ??
+  process.env.SEED_EMPLOYEE_PASSWORD ??
+  "Burgeri123!"
+const demoStaffPasswordHash = await hashPassword(demoStaffPassword)
+const seedCredentialUsers = seedUsers
 
 const statements = [
   insertRows(
@@ -136,7 +139,7 @@ const statements = [
       row.id,
       "credential",
       row.id,
-      demoEmployeePasswordHash,
+      demoStaffPasswordHash,
       accountCreatedAt,
       accountCreatedAt,
     ],
