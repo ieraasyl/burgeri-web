@@ -59,6 +59,7 @@ export const pointOfSale = sqliteTable("point_of_sale", {
   id: id(),
   name: text("name").notNull(),
   address: text("address").default("").notNull(),
+  city: text("city").default("").notNull(),
   isActive: integer("is_active", { mode: "boolean" }).default(true).notNull(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),

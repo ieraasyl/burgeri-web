@@ -1,0 +1,1 @@
+ALTER TABLE `write_off_request` ADD `ml_classification` text;

@@ -1,0 +1,1 @@
+ALTER TABLE `point_of_sale` ADD `city` text DEFAULT '' NOT NULL;

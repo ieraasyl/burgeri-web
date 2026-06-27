@@ -1,5 +1,4 @@
 import {
-  IconBuildingStore,
   IconCheck,
   IconClock,
   IconExternalLink,
@@ -14,8 +13,10 @@ import { useMemo, useState } from "react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { CityPosFilter } from "@/components/city-pos-filter"
 import { Input } from "@/components/ui/input"
 import { reviewWriteOffRequest } from "@/lib/actions"
+import { matchesCityPosFilter } from "@/lib/point-of-sale"
 import {
   deductionModeLabels,
   formatQuantity,
@@ -43,6 +44,8 @@ function WriteOffReviewPage() {
   const reviewRequest = useServerFn(reviewWriteOffRequest)
   const [requests, setRequests] = useState(initialData.requests)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("pending")
+  const [city, setCity] = useState("all")
+  const [posId, setPosId] = useState("all")
   const [search, setSearch] = useState("")
   const [sort, setSort] = useState<{ key: SortKey; direction: "asc" | "desc" }>(
     { key: "createdAt", direction: "desc" }
@@ -64,29 +67,13 @@ function WriteOffReviewPage() {
     [requests]
   )
 
-  const locationStats = useMemo(() => {
-    const map = new Map<
-      string,
-      { id: string; name: string; total: number; pending: number }
-    >()
-    for (const request of requests) {
-      const current = map.get(request.pointOfSaleId) ?? {
-        id: request.pointOfSaleId,
-        name: request.pointOfSaleName,
-        total: 0,
-        pending: 0,
-      }
-      current.total += 1
-      if (request.status === "pending") current.pending += 1
-      map.set(request.pointOfSaleId, current)
-    }
-    return [...map.values()].sort((a, b) => b.total - a.total)
-  }, [requests])
-
   const visibleRequests = useMemo(() => {
     const query = search.trim().toLocaleLowerCase()
     const filtered = requests.filter((request) => {
       if (statusFilter !== "all" && request.status !== statusFilter) {
+        return false
+      }
+      if (!matchesCityPosFilter(request, city, posId)) {
         return false
       }
       if (!query) {
@@ -111,7 +98,7 @@ function WriteOffReviewPage() {
             })
       return sort.direction === "asc" ? comparison : -comparison
     })
-  }, [requests, search, sort, statusFilter])
+  }, [requests, search, sort, statusFilter, city, posId])
 
   function toggleSort(key: SortKey) {
     setSort((current) => ({
@@ -173,41 +160,19 @@ function WriteOffReviewPage() {
         <StatCard label="Отклонено" value={stats.rejected} tone="red" />
       </section>
 
-      <section className="my-8 rounded-2xl border bg-card p-5">
-        <div className="flex items-center gap-2">
-          <IconBuildingStore className="text-primary" />
-          <h2 className="font-heading text-lg font-semibold">
-            Сводка по точкам продаж
-          </h2>
+      <section className="mt-8">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <CityPosFilter
+            pointsOfSale={initialData.pointsOfSale}
+            city={city}
+            posId={posId}
+            onCityChange={setCity}
+            onPosChange={setPosId}
+            selectClass="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+          />
         </div>
-        {locationStats.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Пока нет заявок от точек продаж.
-          </p>
-        ) : (
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {locationStats.map((location) => (
-              <button
-                key={location.id}
-                type="button"
-                onClick={() => {
-                  setSearch(location.name)
-                  setStatusFilter("all")
-                }}
-                className="rounded-xl border p-3 text-left transition-colors hover:bg-muted/50"
-              >
-                <p className="truncate text-sm font-medium">{location.name}</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {location.pending} на рассмотрении · {location.total} всего
-                </p>
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
 
-      <section>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {(["all", "pending", "approved", "rejected"] as const).map(
               (status) => (

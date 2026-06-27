@@ -13,6 +13,7 @@ import {
   seedWriteOffCategories,
   seedWriteOffs,
 } from "@/db/seed-data"
+import { legacyPlaceholderStoreIds } from "@/db/seed-stores"
 
 const databaseName = process.env.D1_DATABASE_NAME ?? "burgeri_db"
 const isRemote = process.argv.includes("--remote")
@@ -29,18 +30,19 @@ const seedCredentialUsers = seedUsers
 const statements = [
   insertRows(
     "point_of_sale",
-    ["id", "name", "address", "is_active", "created_at", "updated_at"],
+    ["id", "name", "address", "city", "is_active", "created_at", "updated_at"],
     seedPointsOfSale,
     (row) => [
       row.id,
       row.name,
       row.address,
+      row.city,
       true,
       accountCreatedAt,
       accountCreatedAt,
     ],
     ["id"],
-    ["name", "address", "is_active"]
+    ["name", "address", "city", "is_active"]
   ),
   insertRows(
     "product_category",
@@ -226,6 +228,7 @@ const statements = [
       "iiko_document_id",
     ]
   ),
+  deactivateLegacyStores(legacyPlaceholderStoreIds),
 ]
 
 const tempDir = mkdtempSync(join(tmpdir(), "burgeri-web-seed-"))
@@ -245,6 +248,12 @@ try {
   process.exit(result.status ?? 1)
 } finally {
   rmSync(tempDir, { recursive: true, force: true })
+}
+
+function deactivateLegacyStores(ids: readonly string[]) {
+  if (ids.length === 0) return ""
+  const idList = ids.map((id) => quoteString(id)).join(", ")
+  return `UPDATE ${quoteIdentifier("point_of_sale")} SET ${quoteIdentifier("is_active")} = 0, ${quoteIdentifier("updated_at")} = cast(unixepoch('subsecond') * 1000 as integer) WHERE ${quoteIdentifier("id")} IN (${idList});`
 }
 
 function insertRows<T>(

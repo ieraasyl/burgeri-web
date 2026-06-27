@@ -98,6 +98,7 @@ function AdminCatalogPage() {
           data: {
             name: String(data.get("name")),
             address: String(data.get("address")),
+            city: String(data.get("city")),
             isActive: data.get("isActive") === "on",
           },
         }),
@@ -120,6 +121,7 @@ function AdminCatalogPage() {
             id: pos.id,
             name: String(data.get("name")),
             address: String(data.get("address")),
+            city: String(data.get("city")),
             isActive: data.get("isActive") === "on",
           },
         }),
@@ -245,6 +247,7 @@ function AdminCatalogPage() {
             onSubmit={handleCreatePos}
           >
             <LabelledInput label="Название" name="name" required />
+            <LabelledInput label="Город" name="city" required />
             <LabelledInput label="Адрес" name="address" />
             <ActiveCheckbox name="isActive" defaultChecked label="Активна" />
             <div className="sm:col-span-2">
@@ -260,6 +263,7 @@ function AdminCatalogPage() {
             <thead className="border-b bg-muted/40">
               <tr>
                 <th className="px-4 py-3 font-medium">Название</th>
+                <th className="px-4 py-3 font-medium">Город</th>
                 <th className="px-4 py-3 font-medium">Адрес</th>
                 <th className="px-4 py-3 font-medium">Статус</th>
                 <th className="px-4 py-3 font-medium">Редактирование</th>
@@ -272,6 +276,9 @@ function AdminCatalogPage() {
                   className="border-b align-top last:border-0 hover:bg-muted/20"
                 >
                   <td className="px-4 py-3 font-medium">{pos.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {pos.city || "—"}
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {pos.address || "—"}
                   </td>
@@ -291,6 +298,12 @@ function AdminCatalogPage() {
                           label="Название"
                           name="name"
                           defaultValue={pos.name}
+                          required
+                        />
+                        <LabelledInput
+                          label="Город"
+                          name="city"
+                          defaultValue={pos.city}
                           required
                         />
                         <LabelledInput

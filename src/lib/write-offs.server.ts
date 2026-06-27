@@ -33,14 +33,22 @@ import type {
 
 export async function getWriteOffReviewData() {
   await requireReviewer("/review/write-offs")
-  const rows = await loadRequests()
-  return { requests: rows }
+  const db = getServerDb()
+  const [requests, pointsOfSale] = await Promise.all([
+    loadRequests(),
+    loadActivePosCatalog(db),
+  ])
+  return { requests, pointsOfSale }
 }
 
 export async function getWriteOffHistoryData() {
   await requireReviewer("/review/history")
-  const rows = await loadRequests()
-  return { requests: rows }
+  const db = getServerDb()
+  const [requests, pointsOfSale] = await Promise.all([
+    loadRequests(),
+    loadActivePosCatalog(db),
+  ])
+  return { requests, pointsOfSale }
 }
 
 export async function getWriteOffDetailData(requestId: string) {
@@ -173,6 +181,7 @@ export async function getCatalogAdminData() {
       id: row.id,
       name: row.name,
       address: row.address,
+      city: row.city,
       isActive: row.isActive,
       updatedAt: row.updatedAt.toISOString(),
     })),
@@ -406,6 +415,7 @@ export async function upsertPointOfSaleAction(input: UpsertPointOfSaleInput) {
       .set({
         name: input.name,
         address: input.address,
+        city: input.city,
         isActive: input.isActive,
         updatedAt: now,
       })
@@ -424,6 +434,7 @@ export async function upsertPointOfSaleAction(input: UpsertPointOfSaleInput) {
     .values({
       name: input.name,
       address: input.address,
+      city: input.city,
       isActive: input.isActive,
     })
     .returning({ id: pointOfSale.id })
@@ -599,7 +610,11 @@ async function loadRequests(requestId?: string) {
       .innerJoin(productCategory, eq(product.categoryId, productCategory.id))
       .where(inArray(product.id, productIds)),
     db
-      .select({ id: pointOfSale.id, name: pointOfSale.name })
+      .select({
+        id: pointOfSale.id,
+        name: pointOfSale.name,
+        city: pointOfSale.city,
+      })
       .from(pointOfSale)
       .where(inArray(pointOfSale.id, posIds)),
     db
@@ -651,6 +666,7 @@ async function loadRequests(requestId?: string) {
       pointOfSaleId: row.pointOfSaleId,
       pointOfSaleName:
         posById.get(row.pointOfSaleId)?.name ?? row.pointOfSaleId,
+      pointOfSaleCity: posById.get(row.pointOfSaleId)?.city ?? "",
       writeOffCategoryId: row.writeOffCategoryId,
       writeOffCategoryName:
         categoryById.get(row.writeOffCategoryId)?.name ?? "",
@@ -693,6 +709,18 @@ function startOfDay(date: Date) {
   const copy = new Date(date)
   copy.setHours(0, 0, 0, 0)
   return copy
+}
+
+async function loadActivePosCatalog(db: ReturnType<typeof getServerDb>) {
+  return db
+    .select({
+      id: pointOfSale.id,
+      name: pointOfSale.name,
+      city: pointOfSale.city,
+    })
+    .from(pointOfSale)
+    .where(eq(pointOfSale.isActive, true))
+    .orderBy(asc(pointOfSale.city), asc(pointOfSale.name))
 }
 
 export type WriteOffReviewData = Awaited<

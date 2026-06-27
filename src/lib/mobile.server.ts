@@ -130,6 +130,7 @@ export async function getMobilePointsOfSale(context: MobileContext) {
     id: row.id,
     name: row.name,
     address: row.address,
+    city: row.city,
   }))
 }
 

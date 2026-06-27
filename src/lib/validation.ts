@@ -93,6 +93,7 @@ export const upsertPointOfSaleSchema = z.object({
   id: z.string().trim().optional(),
   name: z.string().trim().min(2, "Введите название.").max(120),
   address: z.string().trim().max(200),
+  city: z.string().trim().min(1, "Укажите город.").max(80),
   isActive: z.boolean(),
 })
 

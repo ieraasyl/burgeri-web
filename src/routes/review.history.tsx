@@ -3,8 +3,10 @@ import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { useMemo, useState } from "react"
 
+import { CityPosFilter } from "@/components/city-pos-filter"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { matchesCityPosFilter } from "@/lib/point-of-sale"
 import {
   deductionModeLabels,
   formatQuantity,
@@ -27,16 +29,13 @@ type HistoryRequest = ReturnType<typeof Route.useLoaderData>["requests"][number]
 type StatusFilter = "all" | WriteOffStatus
 
 function HistoryPage() {
-  const { requests } = Route.useLoaderData()
+  const { requests, pointsOfSale } = Route.useLoaderData()
   const [status, setStatus] = useState<StatusFilter>("all")
-  const [location, setLocation] = useState("all")
+  const [city, setCity] = useState("all")
+  const [posId, setPosId] = useState("all")
   const [product, setProduct] = useState("all")
   const [search, setSearch] = useState("")
 
-  const locationOptions = useMemo(
-    () => uniqueOptions(requests, (r) => [r.pointOfSaleId, r.pointOfSaleName]),
-    [requests]
-  )
   const productOptions = useMemo(
     () => uniqueOptions(requests, (r) => [r.productId, r.productName]),
     [requests]
@@ -46,7 +45,7 @@ function HistoryPage() {
     const query = search.trim().toLocaleLowerCase()
     return requests.filter((request) => {
       if (status !== "all" && request.status !== status) return false
-      if (location !== "all" && request.pointOfSaleId !== location) return false
+      if (!matchesCityPosFilter(request, city, posId)) return false
       if (product !== "all" && request.productId !== product) return false
       if (!query) return true
       return [
@@ -57,12 +56,12 @@ function HistoryPage() {
         request.iikoDocumentId,
       ].some((value) => value?.toLocaleLowerCase().includes(query))
     })
-  }, [requests, status, location, product, search])
+  }, [requests, status, city, posId, product, search])
 
   return (
     <div>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <Field label="Статус">
             <select
               value={status}
@@ -79,20 +78,14 @@ function HistoryPage() {
               ))}
             </select>
           </Field>
-          <Field label="Точка продаж">
-            <select
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              className={selectClass}
-            >
-              <option value="all">Все точки продаж</option>
-              {locationOptions.map((row) => (
-                <option key={row.id} value={row.id}>
-                  {row.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <CityPosFilter
+            pointsOfSale={pointsOfSale}
+            city={city}
+            posId={posId}
+            onCityChange={setCity}
+            onPosChange={setPosId}
+            selectClass={selectClass}
+          />
           <Field label="Продукт">
             <select
               value={product}

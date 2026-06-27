@@ -75,7 +75,7 @@ export async function listPointsOfSale(db: AppDb) {
     .select()
     .from(pointOfSale)
     .where(eq(pointOfSale.isActive, true))
-    .orderBy(asc(pointOfSale.name))
+    .orderBy(asc(pointOfSale.city), asc(pointOfSale.name))
 }
 
 export async function listWriteOffCategories(db: AppDb) {
