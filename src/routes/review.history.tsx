@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { matchesCityPosFilter } from "@/lib/point-of-sale"
 import {
   deductionModeLabels,
+  formatMoney,
   formatQuantity,
   iikoSyncStatusLabels,
   writeOffStatusLabels,
@@ -57,6 +58,14 @@ function HistoryPage() {
       ].some((value) => value?.toLocaleLowerCase().includes(query))
     })
   }, [requests, status, city, posId, product, search])
+
+  const visibleApprovedLoss = useMemo(
+    () =>
+      visible
+        .filter((request) => request.status === "approved")
+        .reduce((sum, request) => sum + (request.lossAmount ?? 0), 0),
+    [visible]
+  )
 
   return (
     <div>
@@ -123,6 +132,9 @@ function HistoryPage() {
 
       <p className="mt-5 text-xs text-muted-foreground">
         Показано {visible.length} из {requests.length} записей
+        {visibleApprovedLoss > 0
+          ? ` · потери (одобрено): ${formatMoney(visibleApprovedLoss)}`
+          : ""}
       </p>
 
       <div className="mt-2 overflow-x-auto rounded-2xl border">
@@ -134,6 +146,7 @@ function HistoryPage() {
               <Th>Сотрудник</Th>
               <Th>Точка продаж</Th>
               <Th>Продукт</Th>
+              <Th>Потери</Th>
               <Th>Удержание</Th>
               <Th>Статус</Th>
               <Th>iiko</Th>
@@ -160,6 +173,9 @@ function HistoryPage() {
                   {formatQuantity(request.quantity, request.unit)}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
+                  {formatMoney(request.lossAmount)}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
                   {deductionModeLabels[request.deductionMode]}
                   {request.chargedEmployee
                     ? ` · ${request.chargedEmployee.name}`
@@ -177,7 +193,7 @@ function HistoryPage() {
             {visible.length === 0 && (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   className="px-6 py-12 text-center text-muted-foreground"
                 >
                   Нет записей по этим фильтрам.
@@ -234,6 +250,8 @@ function downloadCsv(rows: HistoryRequest[]) {
     "product",
     "quantity",
     "unit",
+    "unit_cost",
+    "loss_amount",
     "write_off_category",
     "deduction",
     "charged_employee",
@@ -255,6 +273,8 @@ function downloadCsv(rows: HistoryRequest[]) {
       request.productName,
       request.quantity,
       request.unit,
+      request.unitCost ?? "",
+      request.lossAmount ?? "",
       request.writeOffCategoryName,
       deductionModeLabels[request.deductionMode as WriteOffDeductionMode],
       request.chargedEmployee?.name ?? "",

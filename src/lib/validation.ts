@@ -109,6 +109,10 @@ export const upsertProductSchema = z.object({
   name: z.string().trim().min(2, "Введите название.").max(120),
   sku: z.string().trim().max(40),
   unit: z.string().trim().min(1, "Укажите единицу измерения.").max(20),
+  unitCost: z
+    .union([z.literal(""), z.null(), z.coerce.number().min(0).max(999_999)])
+    .optional()
+    .transform((value) => (value === "" || value == null ? null : value)),
   isActive: z.boolean(),
 })
 

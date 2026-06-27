@@ -84,6 +84,7 @@ export const product = sqliteTable(
     name: text("name").notNull(),
     sku: text("sku").default("").notNull(),
     unit: text("unit").default("pcs").notNull(),
+    unitCost: real("unit_cost"),
     isActive: integer("is_active", { mode: "boolean" }).default(true).notNull(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

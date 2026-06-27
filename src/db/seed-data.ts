@@ -28,6 +28,7 @@ export interface SeedProduct {
   name: string
   sku: string
   unit: string
+  unitCost: number | null
 }
 export interface SeedWriteOffCategory {
   id: string
@@ -91,6 +92,7 @@ export const seedProducts: SeedProduct[] = [
     name: "Помидор",
     sku: "VEG-TOM",
     unit: "pcs",
+    unitCost: 120,
   },
   {
     id: "prod-patty",
@@ -98,6 +100,7 @@ export const seedProducts: SeedProduct[] = [
     name: "Говяжья котлета",
     sku: "MEA-PAT",
     unit: "pcs",
+    unitCost: 450,
   },
   {
     id: "prod-bun",
@@ -105,6 +108,7 @@ export const seedProducts: SeedProduct[] = [
     name: "Булочка для бургера",
     sku: "BAK-BUN",
     unit: "pcs",
+    unitCost: 85,
   },
   {
     id: "prod-fries",
@@ -112,6 +116,7 @@ export const seedProducts: SeedProduct[] = [
     name: "Картофель фри",
     sku: "SID-FRY",
     unit: "portion",
+    unitCost: 180,
   },
   {
     id: "prod-shake",
@@ -119,6 +124,7 @@ export const seedProducts: SeedProduct[] = [
     name: "Смесь для молочного коктейля",
     sku: "OTH-SHK",
     unit: "l",
+    unitCost: 950,
   },
 ]
 

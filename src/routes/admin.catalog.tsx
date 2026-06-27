@@ -12,6 +12,7 @@ import {
   upsertProduct,
   upsertProductCategory,
 } from "@/lib/actions"
+import { formatMoney } from "@/lib/write-offs"
 import type { CatalogAdminData } from "@/lib/write-offs.server"
 
 const getCatalog = createServerFn({ method: "GET" }).handler(async () => {
@@ -178,6 +179,7 @@ function AdminCatalogPage() {
             name: String(data.get("name")),
             sku: String(data.get("sku")),
             unit: String(data.get("unit")),
+            unitCost: parseUnitCost(data.get("unitCost")),
             isActive: data.get("isActive") === "on",
           },
         }),
@@ -202,6 +204,7 @@ function AdminCatalogPage() {
             name: String(data.get("name")),
             sku: String(data.get("sku")),
             unit: String(data.get("unit")),
+            unitCost: parseUnitCost(data.get("unitCost")),
             isActive: data.get("isActive") === "on",
           },
         }),
@@ -390,6 +393,14 @@ function AdminCatalogPage() {
             <LabelledInput label="Название" name="name" required />
             <LabelledInput label="Артикул (SKU)" name="sku" />
             <UnitSelect name="unit" defaultValue="pcs" />
+            <LabelledInput
+              label="Себестоимость (₸)"
+              name="unitCost"
+              type="number"
+              min={0}
+              step={1}
+              placeholder="Не указана"
+            />
             <ActiveCheckbox
               name="isActive"
               defaultChecked
@@ -450,6 +461,7 @@ function AdminCatalogPage() {
                         <th className="px-4 py-3 font-medium">Продукт</th>
                         <th className="px-4 py-3 font-medium">SKU</th>
                         <th className="px-4 py-3 font-medium">Ед.</th>
+                        <th className="px-4 py-3 font-medium">Себест.</th>
                         <th className="px-4 py-3 font-medium">Статус</th>
                         <th className="px-4 py-3 font-medium">
                           Редактирование
@@ -460,7 +472,7 @@ function AdminCatalogPage() {
                       {categoryProducts.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={5}
+                            colSpan={6}
                             className="px-4 py-6 text-center text-muted-foreground"
                           >
                             В этой категории пока нет продуктов.
@@ -480,6 +492,9 @@ function AdminCatalogPage() {
                             </td>
                             <td className="px-4 py-3">
                               {formatUnit(product.unit)}
+                            </td>
+                            <td className="px-4 py-3 text-muted-foreground">
+                              {formatMoney(product.unitCost)}
                             </td>
                             <td className="px-4 py-3">
                               <StatusBadge
@@ -530,6 +545,17 @@ function AdminCatalogPage() {
                                     name="unit"
                                     defaultValue={product.unit}
                                   />
+                                  <LabelledInput
+                                    label="Себестоимость (₸)"
+                                    name="unitCost"
+                                    type="number"
+                                    min={0}
+                                    step={1}
+                                    defaultValue={
+                                      product.unitCost ?? undefined
+                                    }
+                                    placeholder="Не указана"
+                                  />
                                   <ActiveCheckbox
                                     name="isActive"
                                     defaultChecked={product.isActive}
@@ -558,6 +584,14 @@ function AdminCatalogPage() {
       </section>
     </>
   )
+}
+
+function parseUnitCost(value: FormDataEntryValue | null) {
+  if (value == null || value === "") {
+    return null
+  }
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 function LabelledInput({

@@ -48,3 +48,26 @@ export function formatQuantity(quantity: number, unit?: string | null) {
     : quantity.toFixed(2).replace(/\.?0+$/, "")
   return unit ? `${value} ${unit}` : value
 }
+
+export function computeLossAmount(
+  quantity: number,
+  unitCost: number | null | undefined
+): number | null {
+  if (unitCost == null || unitCost <= 0) {
+    return null
+  }
+  return quantity * unitCost
+}
+
+const moneyFormatter = new Intl.NumberFormat("kk-KZ", {
+  style: "currency",
+  currency: "KZT",
+  maximumFractionDigits: 0,
+})
+
+export function formatMoney(amount: number | null | undefined) {
+  if (amount == null) {
+    return "—"
+  }
+  return moneyFormatter.format(amount)
+}

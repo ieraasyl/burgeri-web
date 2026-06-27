@@ -17,6 +17,7 @@ import { WriteOffMlPanel } from "@/components/write-off-ml-panel"
 import { reviewWriteOffRequest, syncWriteOffToIiko } from "@/lib/actions"
 import {
   deductionModeLabels,
+  formatMoney,
   formatQuantity,
   iikoSyncStatusLabels,
   writeOffStatusLabels,
@@ -161,6 +162,16 @@ function WriteOffDetailPage() {
             <DetailRow
               label="Категория списания"
               value={request.writeOffCategoryName}
+            />
+            <DetailRow
+              label="Себестоимость"
+              value={formatMoney(request.unitCost)}
+              sub={request.unit ? `за ${request.unit}` : undefined}
+            />
+            <DetailRow
+              label="Потери"
+              value={formatMoney(request.lossAmount)}
+              sub={formatQuantity(request.quantity, request.unit)}
             />
             <DetailRow
               label="Удержание"

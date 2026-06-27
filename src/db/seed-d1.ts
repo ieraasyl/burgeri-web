@@ -66,6 +66,7 @@ const statements = [
       "name",
       "sku",
       "unit",
+      "unit_cost",
       "is_active",
       "created_at",
       "updated_at",
@@ -77,12 +78,13 @@ const statements = [
       row.name,
       row.sku,
       row.unit,
+      row.unitCost,
       true,
       accountCreatedAt,
       accountCreatedAt,
     ],
     ["id"],
-    ["category_id", "name", "sku", "unit", "is_active"]
+    ["category_id", "name", "sku", "unit", "unit_cost", "is_active"]
   ),
   insertRows(
     "write_off_category",

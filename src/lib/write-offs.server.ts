@@ -24,6 +24,7 @@ import {
   createIikoWriteOffDocument,
 } from "@/lib/iiko.server"
 import { requireAdmin, requireReviewer } from "@/lib/user-context.server"
+import { computeLossAmount } from "@/lib/write-offs"
 import type {
   CreateEmployeeInput,
   ReviewWriteOffRequestInput,
@@ -174,6 +175,63 @@ export async function getWriteOffAnalyticsData() {
     days.push({ date: day.toISOString().slice(0, 10), total })
   }
 
+  const approvedLossRows = rows.filter(
+    (row) => row.status === "approved" && row.lossAmount != null
+  )
+  const totalLoss = approvedLossRows.reduce(
+    (sum, row) => sum + row.lossAmount!,
+    0
+  )
+  const lossByLocation = groupSum(
+    approvedLossRows,
+    (row) => row.pointOfSaleId,
+    (row) => row.pointOfSaleName,
+    (row) => row.lossAmount!
+  )
+  const lossByProduct = groupSum(
+    approvedLossRows,
+    (row) => row.productId,
+    (row) => row.productName,
+    (row) => row.lossAmount!
+  )
+  const lossByCategory = groupSum(
+    approvedLossRows,
+    (row) => row.writeOffCategoryId,
+    (row) => row.writeOffCategoryName,
+    (row) => row.lossAmount!
+  )
+  const lossDays: Array<{ date: string; loss: number }> = []
+  for (let offset = 13; offset >= 0; offset -= 1) {
+    const day = new Date(start)
+    day.setDate(day.getDate() - offset)
+    const next = new Date(day)
+    next.setDate(next.getDate() + 1)
+    const loss = approvedLossRows
+      .filter((row) => {
+        const created = new Date(row.createdAt)
+        return created >= day && created < next
+      })
+      .reduce((sum, row) => sum + row.lossAmount!, 0)
+    lossDays.push({ date: day.toISOString().slice(0, 10), loss })
+  }
+  const topChargedEmployeesByLoss = [
+    ...approvedLossRows
+      .filter((row) => row.deductionMode === "employee" && row.chargedEmployee)
+      .reduce((map, row) => {
+        const employee = row.chargedEmployee!
+        const current = map.get(employee.id)
+        map.set(employee.id, {
+          id: employee.id,
+          name: employee.name,
+          loss: (current?.loss ?? 0) + row.lossAmount!,
+        })
+        return map
+      }, new Map<string, { id: string; name: string; loss: number }>())
+      .values(),
+  ]
+    .sort((a, b) => b.loss - a.loss)
+    .slice(0, 8)
+
   return {
     byStatus,
     byLocation,
@@ -183,6 +241,12 @@ export async function getWriteOffAnalyticsData() {
     iikoSync,
     topChargedEmployees,
     trend: days,
+    totalLoss,
+    lossByLocation,
+    lossByProduct,
+    lossByCategory,
+    lossTrend: lossDays,
+    topChargedEmployeesByLoss,
   }
 }
 
@@ -219,6 +283,7 @@ export async function getCatalogAdminData() {
       name: row.name,
       sku: row.sku,
       unit: row.unit,
+      unitCost: row.unitCost,
       isActive: row.isActive,
       updatedAt: row.updatedAt.toISOString(),
     })),
@@ -522,6 +587,7 @@ export async function upsertProductAction(input: UpsertProductInput) {
         name: input.name,
         sku: input.sku,
         unit: input.unit,
+        unitCost: input.unitCost ?? null,
         isActive: input.isActive,
         updatedAt: now,
       })
@@ -542,6 +608,7 @@ export async function upsertProductAction(input: UpsertProductInput) {
       name: input.name,
       sku: input.sku,
       unit: input.unit,
+      unitCost: input.unitCost ?? null,
       isActive: input.isActive,
     })
     .returning({ id: product.id })
@@ -626,6 +693,7 @@ async function loadRequests(requestId?: string) {
         name: product.name,
         sku: product.sku,
         unit: product.unit,
+        unitCost: product.unitCost,
         categoryName: productCategory.name,
       })
       .from(product)
@@ -693,6 +761,8 @@ async function loadRequests(requestId?: string) {
       writeOffCategoryName:
         categoryById.get(row.writeOffCategoryId)?.name ?? "",
       quantity: row.quantity,
+      unitCost: productRow?.unitCost ?? null,
+      lossAmount: computeLossAmount(row.quantity, productRow?.unitCost),
       deductionMode: row.deductionMode,
       comment: row.comment,
       photoFileId: row.photoFileId,
@@ -726,6 +796,25 @@ function groupCount<T>(
     })
   }
   return [...map.values()].sort((a, b) => b.total - a.total)
+}
+
+function groupSum<T>(
+  rows: T[],
+  getId: (row: T) => string,
+  getName: (row: T) => string,
+  getValue: (row: T) => number
+) {
+  const map = new Map<string, { id: string; name: string; loss: number }>()
+  for (const row of rows) {
+    const id = getId(row)
+    const current = map.get(id)
+    map.set(id, {
+      id,
+      name: getName(row),
+      loss: (current?.loss ?? 0) + getValue(row),
+    })
+  }
+  return [...map.values()].sort((a, b) => b.loss - a.loss)
 }
 
 function startOfDay(date: Date) {

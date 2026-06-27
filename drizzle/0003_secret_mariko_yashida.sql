@@ -1,0 +1,1 @@
+ALTER TABLE `product` ADD `unit_cost` real;

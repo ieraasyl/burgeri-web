@@ -20,6 +20,7 @@ import { reviewWriteOffRequest } from "@/lib/actions"
 import { matchesCityPosFilter } from "@/lib/point-of-sale"
 import {
   deductionModeLabels,
+  formatMoney,
   formatQuantity,
   iikoSyncStatusLabels,
   writeOffStatusLabels,
@@ -64,6 +65,9 @@ function WriteOffReviewPage() {
         .length,
       rejected: requests.filter((request) => request.status === "rejected")
         .length,
+      approvedLoss: requests
+        .filter((request) => request.status === "approved")
+        .reduce((sum, request) => sum + (request.lossAmount ?? 0), 0),
     }),
     [requests]
   )
@@ -154,11 +158,15 @@ function WriteOffReviewPage() {
 
   return (
     <div>
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard label="Все заявки" value={stats.total} />
         <StatCard label="На рассмотрении" value={stats.pending} tone="amber" />
         <StatCard label="Одобрено" value={stats.approved} tone="green" />
         <StatCard label="Отклонено" value={stats.rejected} tone="red" />
+        <StatCard
+          label="Потери (одобрено)"
+          value={formatMoney(stats.approvedLoss)}
+        />
       </section>
 
       <section className="mt-8">
@@ -292,6 +300,9 @@ function WriteOffReviewPage() {
                         {formatQuantity(request.quantity, request.unit)}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
+                        Потери: {formatMoney(request.lossAmount)}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {request.writeOffCategoryName} ·{" "}
                         {deductionModeLabels[request.deductionMode]}
                         {request.chargedEmployee
@@ -407,7 +418,7 @@ function StatCard({
   tone = "default",
 }: {
   label: string
-  value: number
+  value: number | string
   tone?: "default" | "amber" | "green" | "red"
 }) {
   const tones = {

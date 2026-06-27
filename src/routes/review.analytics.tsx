@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 
+import { formatMoney } from "@/lib/write-offs"
+
 const getAnalytics = createServerFn({ method: "GET" }).handler(async () => {
   const { getWriteOffAnalyticsData } = await import("@/lib/write-offs.server")
   return getWriteOffAnalyticsData()
@@ -14,14 +16,24 @@ export const Route = createFileRoute("/review/analytics")({
 function AnalyticsPage() {
   const data = Route.useLoaderData()
   const trendMax = Math.max(1, ...data.trend.map((day) => day.total))
+  const lossTrendMax = Math.max(1, ...data.lossTrend.map((day) => day.loss))
   const locationMax = Math.max(1, ...data.byLocation.map((row) => row.total))
   const productMax = Math.max(1, ...data.byProduct.map((row) => row.total))
   const categoryMax = Math.max(1, ...data.byCategory.map((row) => row.total))
+  const lossLocationMax = Math.max(
+    1,
+    ...data.lossByLocation.map((row) => row.loss)
+  )
+  const lossProductMax = Math.max(1, ...data.lossByProduct.map((row) => row.loss))
+  const lossCategoryMax = Math.max(
+    1,
+    ...data.lossByCategory.map((row) => row.loss)
+  )
   const deductionTotal = data.byDeduction.none + data.byDeduction.employee
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard label="Все списания" value={data.byStatus.total} />
         <StatCard
           label="На рассмотрении"
@@ -34,6 +46,10 @@ function AnalyticsPage() {
           tone="green"
         />
         <StatCard label="Отклонено" value={data.byStatus.rejected} tone="red" />
+        <StatCard
+          label="Потери (одобрено)"
+          value={formatMoney(data.totalLoss)}
+        />
       </section>
 
       <section className="rounded-2xl border bg-card p-5">
@@ -54,6 +70,34 @@ function AnalyticsPage() {
                     minHeight: day.total > 0 ? "0.5rem" : "0",
                   }}
                   title={`${day.date}: ${day.total}`}
+                />
+              </div>
+              <span className="text-[0.625rem] text-muted-foreground">
+                {day.date.slice(5)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border bg-card p-5">
+        <h2 className="font-heading text-lg font-semibold">
+          Потери · последние 14 дней
+        </h2>
+        <div className="mt-5 flex items-end gap-1.5">
+          {data.lossTrend.map((day) => (
+            <div
+              key={day.date}
+              className="group flex flex-1 flex-col items-center gap-2"
+            >
+              <div className="flex h-32 w-full items-end">
+                <div
+                  className="w-full rounded-t bg-amber-500/80 transition-colors group-hover:bg-amber-500"
+                  style={{
+                    height: `${Math.round((day.loss / lossTrendMax) * 100)}%`,
+                    minHeight: day.loss > 0 ? "0.5rem" : "0",
+                  }}
+                  title={`${day.date}: ${formatMoney(day.loss)}`}
                 />
               </div>
               <span className="text-[0.625rem] text-muted-foreground">
@@ -115,6 +159,22 @@ function AnalyticsPage() {
               ))
             )}
           </div>
+          <h3 className="mt-6 text-sm font-medium">Топ по сумме удержаний</h3>
+          <div className="mt-3 flex flex-col gap-2">
+            {data.topChargedEmployeesByLoss.length === 0 ? (
+              <Empty />
+            ) : (
+              data.topChargedEmployeesByLoss.map((row) => (
+                <div
+                  key={row.id}
+                  className="flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-sm"
+                >
+                  <span className="truncate">{row.name}</span>
+                  <span className="font-medium">{formatMoney(row.loss)}</span>
+                </div>
+              ))
+            )}
+          </div>
         </section>
 
         <section className="rounded-2xl border bg-card p-5">
@@ -136,6 +196,24 @@ function AnalyticsPage() {
             <SyncTile label="Ошибка" value={data.iikoSync.failed} tone="red" />
           </div>
         </section>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <LossBarSection
+          title="Потери по точке"
+          rows={data.lossByLocation}
+          max={lossLocationMax}
+        />
+        <LossBarSection
+          title="Потери по продукту"
+          rows={data.lossByProduct}
+          max={lossProductMax}
+        />
+        <LossBarSection
+          title="Потери по категории списания"
+          rows={data.lossByCategory}
+          max={lossCategoryMax}
+        />
       </div>
     </div>
   )
@@ -159,6 +237,36 @@ function BarSection({
         ) : (
           rows.map((row) => (
             <BarRow key={row.id} label={row.name} value={row.total} max={max} />
+          ))
+        )}
+      </div>
+    </section>
+  )
+}
+
+function LossBarSection({
+  title,
+  rows,
+  max,
+}: {
+  title: string
+  rows: Array<{ id: string; name: string; loss: number }>
+  max: number
+}) {
+  return (
+    <section className="rounded-2xl border bg-card p-5">
+      <h2 className="font-heading text-lg font-semibold">{title}</h2>
+      <div className="mt-4 flex flex-col gap-3">
+        {rows.length === 0 ? (
+          <Empty />
+        ) : (
+          rows.map((row) => (
+            <LossBarRow
+              key={row.id}
+              label={row.name}
+              value={row.loss}
+              max={max}
+            />
           ))
         )}
       </div>
@@ -191,13 +299,38 @@ function BarRow({
   )
 }
 
+function LossBarRow({
+  label,
+  value,
+  max,
+}: {
+  label: string
+  value: number
+  max: number
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="truncate">{label}</span>
+        <span className="font-medium tabular-nums">{formatMoney(value)}</span>
+      </div>
+      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-amber-500"
+          style={{ width: `${Math.round((value / max) * 100)}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 function StatCard({
   label,
   value,
   tone = "default",
 }: {
   label: string
-  value: number
+  value: number | string
   tone?: "default" | "amber" | "green" | "red"
 }) {
   const tones = {
