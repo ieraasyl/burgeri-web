@@ -1,0 +1,16 @@
+# Copy to `.dev.vars` for local Worker development (`pnpm dev`).
+# Loaded by @cloudflare/vite-plugin. Gitignored — do not commit real secrets.
+#
+# Generate a secret:
+#   openssl rand -hex 32
+
+# Required — Better Auth session signing and cookie encryption
+BETTER_AUTH_SECRET=replace-with-openssl-rand-hex-32
+BETTER_AUTH_URL=http://localhost:3000
+
+# Optional — mobile write-off photo uploads via gas.gs
+# Leave blank if you are not testing photo upload from burgeri-mobile.
+GAS_URL=
+GAS_SECRET=
+# In the Apps Script project, set GAS_PHOTO_FOLDER_ID as a Script Property to
+# choose the Drive folder for uploaded write-off photos.
