@@ -1,88 +1,65 @@
 # Burgeri write-off control
 
-Web application for **reviewing** product write-off requests from Burgeri
-restaurants, based on [`Кейс Mentoria Hackathon.md`](./Кейс%20Mentoria%20Hackathon.md).
+Web app for reviewing product write-off requests from Burgeri restaurants. Staff submit evidence via `burgeri-mobile`; reviewers approve or reject requests and sync approved acts to **iiko**. This repo also hosts the shared Better Auth, D1, and `/api/mobile/*` backend.
 
-Restaurant staff photograph and submit write-offs from `burgeri-mobile`.
-Reviewers use this web app to verify the evidence in one queue, approve or
-reject requests, and push approved acts to **iiko**. This repo also owns the
-shared Better Auth, D1, and `/api/mobile/*` backend used by the mobile app.
+## Features
 
-## What the reviewer website does
-
-- `/review/write-offs` — live queue with search, status/restaurant filters,
-  sortable columns, per-restaurant check-in, and one-click approve/reject.
-- `/review/write-offs/$id` — full request detail: large evidence photo, audit
-  trail, approve/reject with a note, and the **iiko act panel** (preview the
-  document payload and sync approved acts to iiko).
-- `/review/analytics` — totals and 14-day trend by restaurant, product,
-  deduction type, iiko sync state, and the top charged employees.
-- `/review/history` — filterable log of every request with **CSV export** for
-  accounting.
-- `/admin` — staff & roles management (admin only).
-- `/api/mobile/*` — mobile app session, catalog, photo upload, and write-off
-  request endpoints.
+- **Write-off queue** — search, filters, approve/reject, per-restaurant check-in
+- **Request detail** — evidence photo, audit trail, iiko act preview and sync
+- **Analytics** — totals and 14-day trends by restaurant, product, and deduction type
+- **History** — filterable log with CSV export
+- **Admin** — staff and role management
 
 ## Roles
 
-Each user has one `staff_profile` role:
+| Role | Access |
+| --- | --- |
+| `employee` | Mobile app only (submit write-offs) |
+| `reviewer` | Reviewer workspace |
+| `admin` | Reviewer workspace + `/admin` |
 
-- `employee` — submit write-offs from the Burgeri mobile app only.
-- `reviewer` — access the reviewer workspace.
-- `admin` — additionally manage staff roles at `/admin`.
+New sign-ins default to `employee`; admins promote reviewers from `/admin`.
 
-New sign-ins default to `employee`; an admin promotes reviewers and provisions
-employee mobile credentials from `/admin`.
+## Stack
 
-## Tech
-
-React 19, TypeScript, TanStack Start + Router, Tailwind CSS v4, Better Auth
-(email/password for web, username/password + Expo cookies for mobile), Drizzle
-ORM, and Cloudflare Workers + D1.
-
-The iiko integration is a mock adapter ([`src/lib/iiko.server.ts`](./src/lib/iiko.server.ts))
-that builds a production-shaped write-off act and returns a document id; wire in
-real iiko Server API credentials to go live.
+React 19, TypeScript, TanStack Start + Router, Tailwind CSS v4, Better Auth, Drizzle ORM, Cloudflare Workers + D1. iiko integration is a mock adapter in `src/lib/iiko.server.ts`.
 
 ## Local setup
 
-> Requires Node.js 22.13+ (the toolchain — Vite 8 / TypeScript 6 — targets a
-> recent runtime) and `pnpm`.
+Requires Node.js 22.13+ and `pnpm`.
 
-1. `pnpm install`
-2. Copy `.dev.vars.example` to `.dev.vars` and set a strong
-   `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL=http://localhost:3000`.
-3. Create the D1 database and put its id in `wrangler.jsonc`:
-   `pnpm wrangler d1 create burgeri-web-db`.
-4. Apply migrations and seed realistic local data:
-   `pnpm db:migrate:local` then `pnpm db:seed:local`.
-   (The initial migration is committed under `drizzle/`; run `pnpm db:generate`
-   only after changing `src/db/schema.ts`.)
-5. `pnpm dev` and open http://localhost:3000.
+```bash
+pnpm install
+cp .dev.vars.example .dev.vars   # set BETTER_AUTH_SECRET and BETTER_AUTH_URL
+pnpm wrangler d1 create bahandi-db   # put the id in wrangler.jsonc
+pnpm db:migrate:local
+pnpm db:seed:local
+pnpm dev
+```
+
+Open http://localhost:3000.
 
 ### Seeded accounts
 
-`pnpm db:seed:local` creates anonymized staff, realistic catalog data,
-password credentials, local evidence photos, stored ML classifications, and 36
-sample write-off requests. Web reviewers sign in with email/password.
+| Email | Role | Password |
+| --- | --- | --- |
+| `admin@burgeri.kz` | admin | `Burgeri123!` |
+| `reviewer@burgeri.kz` | reviewer | `Burgeri123!` |
+| `manager@burgeri.kz` | reviewer | `Burgeri123!` |
 
-| Email                 | Role     |
-| --------------------- | -------- |
-| `admin@burgeri.kz`    | admin    |
-| `reviewer@burgeri.kz` | reviewer |
-| `manager@burgeri.kz`  | reviewer |
+Mobile employees use their id as username (e.g. `EMP-1001`). Override the seed password with `SEED_STAFF_PASSWORD`.
 
-Seeded mobile employee logins use the employee id as username, for example
-`EMP-1001`. Seeded web and mobile passwords default to `Burgeri123!`. Override
-that seed password with `SEED_STAFF_PASSWORD` when running `pnpm db:seed:*`.
+## Scripts
 
-## Notes
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Local dev server |
+| `pnpm build` / `pnpm deploy` | Build and deploy to Cloudflare |
+| `pnpm db:generate` | Generate migrations after schema changes |
+| `pnpm db:migrate:local` / `:remote` | Apply D1 migrations |
+| `pnpm db:seed:local` / `:remote` | Seed demo data |
+| `pnpm typecheck` / `pnpm lint` | Type check and lint |
 
-- `src/routeTree.gen.ts` is generated by TanStack Router on `pnpm dev` /
-  `pnpm build`.
-- The original Mentoria mentorship foundation (courses, opportunities, quizzes)
-  has been removed; only the write-off domain and the auth/Cloudflare foundation
-  remain.
-- For production, set `BETTER_AUTH_URL=https://burgeri.ualikhan.dev` in the
-  Worker environment and set `BETTER_AUTH_SECRET` with `pnpm wrangler secret put
-  BETTER_AUTH_SECRET`; do not commit secrets in `wrangler.jsonc`.
+## Production
+
+Set `BETTER_AUTH_URL` to your domain and store `BETTER_AUTH_SECRET` via `pnpm wrangler secret put BETTER_AUTH_SECRET`. Do not commit secrets.
