@@ -1,5 +1,4 @@
 import {
-  IconBurger,
   IconLoader2,
   IconLogout,
   IconMenu2,
@@ -10,7 +9,9 @@ import { Link } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import type { ReactNode } from "react"
 
+import { BahandiMark, BahandiWordmark } from "@/components/brand"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { signOut, useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 
@@ -67,18 +68,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isHeaderHidden = useHideOnScroll()
 
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground">
+    <TooltipProvider delay={200}>
+      <div className="flex min-h-svh flex-col bg-background text-foreground">
       <header
         className={cn(
-          "sticky top-0 z-50 border-b bg-background transition-transform duration-300",
+          "sticky top-0 z-50 border-b bg-background/85 backdrop-blur-sm transition-transform duration-300",
           isHeaderHidden && "-translate-y-full"
         )}
       >
         <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex min-w-0 items-center gap-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-              <IconBurger className="size-5" />
-            </span>
+          <Link
+            to="/"
+            className="flex min-w-0 items-center gap-3 rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+          >
+            <BahandiMark className="size-9 shrink-0" />
             <span className="flex min-w-0 flex-col leading-tight">
               <span className="font-heading text-base font-semibold">
                 Burgeri Ops
@@ -118,22 +121,31 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex flex-1 flex-col">{children}</main>
 
       <footer className="border-t">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-3 px-4 py-4 text-sm sm:px-6 lg:px-8">
-          <Link
-            to="/privacy"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Конфиденциальность
-          </Link>
-          <Link
-            to="/terms"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Условия
-          </Link>
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 text-sm sm:flex-row sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
+            <BahandiWordmark className="h-6" />
+            <span className="text-xs text-muted-foreground">
+              Контроль списаний для сети Bahandi
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/privacy"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Конфиденциальность
+            </Link>
+            <Link
+              to="/terms"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Условия
+            </Link>
+          </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </TooltipProvider>
   )
 }
 

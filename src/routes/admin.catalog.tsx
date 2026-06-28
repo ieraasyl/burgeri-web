@@ -5,6 +5,7 @@ import { useMemo, useState } from "react"
 import type { FormEvent } from "react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -680,15 +681,9 @@ function StatusBadge({
   inactiveLabel?: string
 }) {
   return (
-    <span
-      className={
-        active
-          ? "inline-flex rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700"
-          : "inline-flex rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
-      }
-    >
+    <Badge variant={active ? "success" : "secondary"}>
       {active ? activeLabel : inactiveLabel}
-    </span>
+    </Badge>
   )
 }
 

@@ -25,6 +25,7 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { useEffect, useState } from "react"
 
+import { Badge } from "@/components/ui/badge"
 import { formatMoney, writeOffStatusLabels } from "@/lib/write-offs"
 import { cn } from "@/lib/utils"
 
@@ -209,7 +210,7 @@ function AnalyticsPage() {
               </p>
             </div>
             <div className="text-right">
-              <p className="font-heading text-2xl font-semibold text-amber-600 tabular-nums dark:text-amber-300">
+              <p className="font-heading text-2xl font-semibold text-warning tabular-nums">
                 {formatMoney(data.totalLoss)}
               </p>
               <Change value={lossChange} />
@@ -361,7 +362,7 @@ function AnalyticsPage() {
               className={cn(
                 "border-b-2 border-transparent px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
                 lossBreakdown === key &&
-                  "border-amber-500 font-medium text-foreground"
+                  "border-warning font-medium text-foreground"
               )}
               onClick={() => setLossBreakdown(key)}
             >
@@ -553,7 +554,7 @@ function Change({ value }: { value: number | null }) {
     <span
       className={cn(
         "inline-flex items-center gap-0.5 text-xs font-medium",
-        positive ? "text-amber-600" : "text-emerald-600"
+        positive ? "text-warning" : "text-success"
       )}
       title="По сравнению с предыдущим периодом"
     >
@@ -699,8 +700,8 @@ function LossTrendChart({
       >
         <defs>
           <linearGradient id="loss-area" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--warning)" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="var(--warning)" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0, 0.5, 1].map((ratio) => (
@@ -718,7 +719,7 @@ function LossTrendChart({
         <polyline
           points={line}
           fill="none"
-          stroke="#f59e0b"
+          stroke="var(--warning)"
           strokeWidth="3"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -730,7 +731,7 @@ function LossTrendChart({
               cy={point.y}
               r="4"
               fill="var(--color-background)"
-              stroke="#f59e0b"
+              stroke="var(--warning)"
               strokeWidth="2"
             >
               <title>{`${formatDate(point.date)}: ${formatMoney(point.value)}`}</title>
@@ -848,7 +849,7 @@ function LossRankedRows({
       {visible.map((row) => (
         <div key={row.id} className="relative py-3">
           <div
-            className="absolute inset-y-1 left-0 rounded-md bg-amber-500/10"
+            className="absolute inset-y-1 left-0 rounded-md bg-warning/10"
             style={{ width: `${Math.round((row.loss / max) * 100)}%` }}
           />
           <div className="relative flex items-center justify-between gap-4 px-2 text-sm">
@@ -901,7 +902,7 @@ function StatusRow({
       <span
         className={cn(
           "font-heading text-xl font-semibold tabular-nums",
-          tone === "green" && "text-emerald-600",
+          tone === "green" && "text-success",
           tone === "red" && "text-destructive"
         )}
       >
@@ -942,7 +943,7 @@ function DisproportionFlagRows({
           className="relative py-3"
         >
           <div
-            className="absolute inset-y-1 left-0 rounded-md bg-amber-500/10"
+            className="absolute inset-y-1 left-0 rounded-md bg-warning/10"
             style={{ width: `${Math.round((row.count / max) * 100)}%` }}
           />
           <div className="relative flex items-start justify-between gap-4 px-2 text-sm">
@@ -951,16 +952,19 @@ function DisproportionFlagRows({
                 <span className="truncate font-medium">
                   {row.pointOfSaleName}
                 </span>
-                <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-amber-700 uppercase">
+                <Badge
+                  variant="warning"
+                  className="px-2 text-[10px] tracking-wide uppercase"
+                >
                   Аномалия
-                </span>
+                </Badge>
               </div>
               <p className="mt-0.5 truncate text-xs text-muted-foreground">
                 {row.label}
               </p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="font-medium text-amber-600 tabular-nums">
+              <p className="font-medium text-warning tabular-nums">
                 {row.count}
               </p>
               <p className="text-[11px] text-muted-foreground tabular-nums">
@@ -994,7 +998,7 @@ function SummaryRow({
       <p
         className={cn(
           "font-heading text-2xl font-semibold tabular-nums",
-          tone === "amber" && "text-amber-600"
+          tone === "amber" && "text-warning"
         )}
       >
         {value}

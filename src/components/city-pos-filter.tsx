@@ -1,3 +1,11 @@
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { listPosByCity, sortCities } from "@/lib/point-of-sale"
 import type { PosCatalogEntry } from "@/lib/point-of-sale"
 
@@ -7,7 +15,6 @@ interface CityPosFilterProps {
   posId: string
   onCityChange: (city: string) => void
   onPosChange: (posId: string) => void
-  selectClass: string
 }
 
 export function CityPosFilter({
@@ -16,51 +23,64 @@ export function CityPosFilter({
   posId,
   onCityChange,
   onPosChange,
-  selectClass,
 }: CityPosFilterProps) {
   const cities = sortCities(pointsOfSale.map((pos) => pos.city))
   const posOptions = city === "all" ? [] : listPosByCity(pointsOfSale, city)
 
   return (
     <>
-      <label className="grid gap-1.5">
+      <div className="grid gap-1.5">
         <span className="text-xs font-medium text-muted-foreground">Город</span>
-        <select
+        <Select
           value={city}
-          onChange={(event) => {
-            onCityChange(event.target.value)
+          onValueChange={(value) => {
+            onCityChange(value ?? "all")
             onPosChange("all")
           }}
-          className={selectClass}
         >
-          <option value="all">Все города</option>
-          {cities.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="grid gap-1.5">
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Все города" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="all">Все города</SelectItem>
+              {cities.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {value}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid gap-1.5">
         <span className="text-xs font-medium text-muted-foreground">
           Точка продаж
         </span>
-        <select
+        <Select
           value={posId}
-          onChange={(event) => onPosChange(event.target.value)}
-          className={selectClass}
+          onValueChange={(value) => onPosChange(value ?? "all")}
           disabled={city === "all"}
         >
-          <option value="all">
-            {city === "all" ? "Сначала выберите город" : "Все точки в городе"}
-          </option>
-          {posOptions.map((pos) => (
-            <option key={pos.id} value={pos.id}>
-              {pos.name}
-            </option>
-          ))}
-        </select>
-      </label>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Сначала выберите город" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="all">
+                {city === "all"
+                  ? "Сначала выберите город"
+                  : "Все точки в городе"}
+              </SelectItem>
+              {posOptions.map((pos) => (
+                <SelectItem key={pos.id} value={pos.id}>
+                  {pos.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
     </>
   )
 }

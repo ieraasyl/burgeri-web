@@ -1,11 +1,35 @@
-import { IconDownload, IconSearch } from "@tabler/icons-react"
+import { IconDownload, IconHistory, IconSearch } from "@tabler/icons-react"
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { useMemo, useState } from "react"
 
 import { CityPosFilter } from "@/components/city-pos-filter"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { matchesCityPosFilter } from "@/lib/point-of-sale"
 import {
   deductionModeLabels,
@@ -28,6 +52,12 @@ export const Route = createFileRoute("/review/history")({
 
 type HistoryRequest = ReturnType<typeof Route.useLoaderData>["requests"][number]
 type StatusFilter = "all" | WriteOffStatus
+
+const statusBadgeVariant = {
+  pending: "warning",
+  approved: "success",
+  rejected: "destructive",
+} as const
 
 function HistoryPage() {
   const { requests, pointsOfSale } = Route.useLoaderData()
@@ -72,20 +102,26 @@ function HistoryPage() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <Field label="Статус">
-            <select
+            <Select
               value={status}
-              onChange={(event) =>
-                setStatus(event.target.value as StatusFilter)
-              }
-              className={selectClass}
+              onValueChange={(value) => setStatus((value ?? "all") as StatusFilter)}
             >
-              <option value="all">Все статусы</option>
-              {(["pending", "approved", "rejected"] as const).map((value) => (
-                <option key={value} value={value}>
-                  {writeOffStatusLabels[value]}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Все статусы" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">Все статусы</SelectItem>
+                  {(["pending", "approved", "rejected"] as const).map(
+                    (value) => (
+                      <SelectItem key={value} value={value}>
+                        {writeOffStatusLabels[value]}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </Field>
           <CityPosFilter
             pointsOfSale={pointsOfSale}
@@ -93,21 +129,26 @@ function HistoryPage() {
             posId={posId}
             onCityChange={setCity}
             onPosChange={setPosId}
-            selectClass={selectClass}
           />
           <Field label="Продукт">
-            <select
+            <Select
               value={product}
-              onChange={(event) => setProduct(event.target.value)}
-              className={selectClass}
+              onValueChange={(value) => setProduct(value ?? "all")}
             >
-              <option value="all">Все продукты</option>
-              {productOptions.map((row) => (
-                <option key={row.id} value={row.id}>
-                  {row.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Все продукты" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">Все продукты</SelectItem>
+                  {productOptions.map((row) => (
+                    <SelectItem key={row.id} value={row.id}>
+                      {row.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </Field>
           <Field label="Поиск">
             <label className="relative block">
@@ -137,71 +178,80 @@ function HistoryPage() {
           : ""}
       </p>
 
-      <div className="mt-2 overflow-x-auto rounded-2xl border">
-        <table className="w-full min-w-[960px] text-left text-sm">
-          <thead className="border-b bg-muted/40">
-            <tr>
-              <Th>Номер</Th>
-              <Th>Подано</Th>
-              <Th>Сотрудник</Th>
-              <Th>Точка продаж</Th>
-              <Th>Продукт</Th>
-              <Th>Потери</Th>
-              <Th>Удержание</Th>
-              <Th>Статус</Th>
-              <Th>iiko</Th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="mt-2 overflow-hidden rounded-2xl border bg-card">
+        <Table className="min-w-[960px]">
+          <TableHeader className="bg-muted/40">
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Номер</TableHead>
+              <TableHead>Подано</TableHead>
+              <TableHead>Сотрудник</TableHead>
+              <TableHead>Точка продаж</TableHead>
+              <TableHead>Продукт</TableHead>
+              <TableHead>Потери</TableHead>
+              <TableHead>Удержание</TableHead>
+              <TableHead>Статус</TableHead>
+              <TableHead>iiko</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {visible.map((request) => (
-              <tr
-                key={request.id}
-                className="border-b align-top last:border-0 hover:bg-muted/20"
-              >
-                <td className="px-4 py-3 font-medium">
+              <TableRow key={request.id} className="align-top">
+                <TableCell className="py-3 font-medium">
                   {request.requestNumber}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
+                </TableCell>
+                <TableCell className="py-3 whitespace-normal text-muted-foreground">
                   {formatDate(request.createdAt)}
-                </td>
-                <td className="px-4 py-3">{request.submitter?.name ?? "—"}</td>
-                <td className="px-4 py-3 text-muted-foreground">
+                </TableCell>
+                <TableCell className="py-3 whitespace-normal">
+                  {request.submitter?.name ?? "—"}
+                </TableCell>
+                <TableCell className="py-3 whitespace-normal text-muted-foreground">
                   {request.pointOfSaleName}
-                </td>
-                <td className="px-4 py-3">
+                </TableCell>
+                <TableCell className="py-3 whitespace-normal">
                   {request.productName} ·{" "}
                   {formatQuantity(request.quantity, request.unit)}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
+                </TableCell>
+                <TableCell className="py-3 text-muted-foreground">
                   {formatMoney(request.lossAmount)}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
+                </TableCell>
+                <TableCell className="py-3 whitespace-normal text-muted-foreground">
                   {deductionModeLabels[request.deductionMode]}
                   {request.chargedEmployee
                     ? ` · ${request.chargedEmployee.name}`
                     : ""}
-                </td>
-                <td className="px-4 py-3">
-                  {writeOffStatusLabels[request.status]}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
+                </TableCell>
+                <TableCell className="py-3">
+                  <Badge variant={statusBadgeVariant[request.status]}>
+                    {writeOffStatusLabels[request.status]}
+                  </Badge>
+                </TableCell>
+                <TableCell className="py-3 whitespace-normal text-muted-foreground">
                   {request.iikoDocumentId ??
                     iikoSyncStatusLabels[request.iikoSyncStatus]}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
             {visible.length === 0 && (
-              <tr>
-                <td
-                  colSpan={9}
-                  className="px-6 py-12 text-center text-muted-foreground"
-                >
-                  Нет записей по этим фильтрам.
-                </td>
-              </tr>
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={9} className="p-0">
+                  <Empty className="border-0">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <IconHistory />
+                      </EmptyMedia>
+                      <EmptyTitle>Нет записей</EmptyTitle>
+                      <EmptyDescription>
+                        По выбранным фильтрам история пуста. Сбросьте статус,
+                        точку продаж или продукт.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   )
@@ -234,10 +284,6 @@ function Field({
       {children}
     </div>
   )
-}
-
-function Th({ children }: { children: React.ReactNode }) {
-  return <th className="px-4 py-3 font-medium">{children}</th>
 }
 
 function downloadCsv(rows: HistoryRequest[]) {
@@ -315,6 +361,3 @@ function formatDate(value: string) {
     timeStyle: "short",
   }).format(new Date(value))
 }
-
-const selectClass =
-  "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { BahandiMark } from "@/components/brand"
 import { signIn, useSession } from "@/lib/auth-client"
 
 export const Route = createFileRoute("/sign-in")({
@@ -74,6 +75,7 @@ function SignInPage() {
       <SessionRedirect redirectTo={redirectTo} />
       <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-8 sm:px-6 lg:min-h-[calc(100svh-8rem)] lg:grid-cols-[minmax(0,1fr)_29rem] lg:px-8 lg:py-12">
         <section className="flex min-w-0 flex-col justify-center">
+          <BahandiMark className="mb-6 size-12" />
           <h1 className="max-w-3xl font-heading text-3xl font-semibold text-balance sm:text-4xl lg:text-5xl">
             Войдите в рабочее место списаний Burgeri.
           </h1>

@@ -3,7 +3,7 @@ import {
   IconClock,
   IconExternalLink,
   IconLoader2,
-  IconPhoto,
+  IconPhotoOff,
   IconSearch,
   IconX,
 } from "@tabler/icons-react"
@@ -12,12 +12,31 @@ import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { useMemo, useState } from "react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { CityPosFilter } from "@/components/city-pos-filter"
-import { ConfidencePill } from "@/components/write-off-ml-panel"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
+import { ConfidencePill } from "@/components/write-off-ml-panel"
 import { reviewWriteOffRequest } from "@/lib/actions"
 import { matchesCityPosFilter } from "@/lib/point-of-sale"
+import { cn } from "@/lib/utils"
 import {
   deductionModeLabels,
   formatMoney,
@@ -156,13 +175,32 @@ function WriteOffReviewPage() {
     })
   }
 
+  const statusFilters: Array<{ key: StatusFilter; label: string; count: number }> = [
+    { key: "all", label: "Все", count: stats.total },
+    { key: "pending", label: writeOffStatusLabels.pending, count: stats.pending },
+    {
+      key: "approved",
+      label: writeOffStatusLabels.approved,
+      count: stats.approved,
+    },
+    {
+      key: "rejected",
+      label: writeOffStatusLabels.rejected,
+      count: stats.rejected,
+    },
+  ]
+
   return (
     <div>
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard label="Все заявки" value={stats.total} />
-        <StatCard label="На рассмотрении" value={stats.pending} tone="amber" />
-        <StatCard label="Одобрено" value={stats.approved} tone="green" />
-        <StatCard label="Отклонено" value={stats.rejected} tone="red" />
+        <StatCard
+          label="На рассмотрении"
+          value={stats.pending}
+          tone="warning"
+        />
+        <StatCard label="Одобрено" value={stats.approved} tone="success" />
+        <StatCard label="Отклонено" value={stats.rejected} tone="destructive" />
         <StatCard
           label="Потери (одобрено)"
           value={formatMoney(stats.approvedLoss)}
@@ -177,31 +215,23 @@ function WriteOffReviewPage() {
             posId={posId}
             onCityChange={setCity}
             onPosChange={setPosId}
-            selectClass="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
           />
         </div>
 
         <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
-            {(["all", "pending", "approved", "rejected"] as const).map(
-              (status) => (
-                <button
-                  key={status}
-                  type="button"
-                  onClick={() => setStatusFilter(status)}
-                  className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-                    statusFilter === status
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  {status === "all" ? "Все" : writeOffStatusLabels[status]}
-                  <span className="ml-1.5 opacity-70">
-                    {status === "all" ? stats.total : stats[status]}
-                  </span>
-                </button>
-              )
-            )}
+            {statusFilters.map(({ key, label, count }) => (
+              <Button
+                key={key}
+                type="button"
+                size="sm"
+                variant={statusFilter === key ? "default" : "outline"}
+                onClick={() => setStatusFilter(key)}
+              >
+                {label}
+                <span className="tabular-nums opacity-70">{count}</span>
+              </Button>
+            ))}
           </div>
           <label className="relative w-full lg:max-w-sm">
             <IconSearch className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -225,53 +255,50 @@ function WriteOffReviewPage() {
           Показано {visibleRequests.length} из {requests.length} заявок
         </p>
 
-        <div className="mt-2 overflow-x-auto rounded-2xl border">
-          <table className="w-full min-w-[1040px] text-left text-sm">
-            <thead className="border-b bg-muted/40">
-              <tr>
-                <th className="w-3 p-0" aria-label="Уверенность QC" />
-                <th className="px-4 py-3 font-medium">Фото</th>
-                <SortableHeader
+        <div className="mt-2 overflow-hidden rounded-2xl border bg-card">
+          <Table className="min-w-[1040px]">
+            <TableHeader className="bg-muted/40">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-3 p-0" aria-label="Уверенность QC" />
+                <TableHead>Фото</TableHead>
+                <SortableHead
                   label="Подано"
                   sortKey="createdAt"
                   sort={sort}
                   onSort={toggleSort}
                 />
-                <SortableHeader
+                <SortableHead
                   label="Точка продаж"
                   sortKey="pointOfSaleName"
                   sort={sort}
                   onSort={toggleSort}
                 />
-                <th className="px-4 py-3 font-medium">Детали</th>
-                <SortableHeader
+                <TableHead>Детали</TableHead>
+                <SortableHead
                   label="Статус"
                   sortKey="status"
                   sort={sort}
                   onSort={toggleSort}
                 />
-                <th className="px-4 py-3 font-medium">Решение</th>
-              </tr>
-            </thead>
-            <tbody>
+                <TableHead>Решение</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {visibleRequests.map((request) => {
                 const isPending = pendingIds.has(request.id)
                 const ml = request.mlClassification
                 const showMlPill = Boolean(ml && !ml.error && ml.confidence > 0)
                 return (
-                  <tr
-                    key={request.id}
-                    className="border-b align-top last:border-0 hover:bg-muted/20"
-                  >
-                    <td className="w-3 px-1 py-4 align-middle">
+                  <TableRow key={request.id} className="align-top">
+                    <TableCell className="w-3 px-1 py-4 align-middle">
                       {showMlPill ? (
                         <ConfidencePill
                           confidence={ml!.confidence}
                           className="mx-auto min-h-16"
                         />
                       ) : null}
-                    </td>
-                    <td className="px-4 py-4">
+                    </TableCell>
+                    <TableCell className="py-4">
                       <Link
                         to="/review/write-offs/$id"
                         params={{ id: request.id }}
@@ -279,8 +306,8 @@ function WriteOffReviewPage() {
                       >
                         <Evidence url={request.photoUrl} />
                       </Link>
-                    </td>
-                    <td className="px-4 py-4">
+                    </TableCell>
+                    <TableCell className="py-4 whitespace-normal">
                       <p className="font-medium">
                         {request.submitter?.name ?? "Неизвестный пользователь"}
                       </p>
@@ -288,11 +315,11 @@ function WriteOffReviewPage() {
                         {request.requestNumber} ·{" "}
                         {formatDate(request.createdAt)}
                       </p>
-                    </td>
-                    <td className="px-4 py-4 text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="py-4 whitespace-normal text-muted-foreground">
                       {request.pointOfSaleName}
-                    </td>
-                    <td className="max-w-72 px-4 py-4">
+                    </TableCell>
+                    <TableCell className="max-w-72 py-4 whitespace-normal">
                       <p className="font-medium">
                         {request.productName} ·{" "}
                         {formatQuantity(request.quantity, request.unit)}
@@ -318,19 +345,19 @@ function WriteOffReviewPage() {
                         Открыть детали
                         <IconExternalLink className="size-3.5" />
                       </Link>
-                    </td>
-                    <td className="px-4 py-4">
+                    </TableCell>
+                    <TableCell className="py-4 whitespace-normal">
                       <StatusBadge status={request.status} />
                       {request.status === "approved" && (
                         <p className="mt-2 max-w-28 text-xs text-muted-foreground">
                           {iikoSyncStatusLabels[request.iikoSyncStatus]}
                         </p>
                       )}
-                    </td>
-                    <td className="w-64 px-4 py-4">
+                    </TableCell>
+                    <TableCell className="w-64 py-4 whitespace-normal">
                       {request.status === "pending" ? (
                         <div className="grid gap-2">
-                          <textarea
+                          <Textarea
                             value={comments[request.id] ?? ""}
                             onChange={(event) =>
                               setComments((current) => ({
@@ -341,7 +368,7 @@ function WriteOffReviewPage() {
                             rows={2}
                             maxLength={1000}
                             placeholder="Заметка ревьюера (обязательна при отклонении)"
-                            className="w-full resize-none rounded-md border border-input bg-background px-2.5 py-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                            className="min-h-16 py-2 text-xs"
                           />
                           <div className="flex gap-2">
                             <Button
@@ -377,22 +404,30 @@ function WriteOffReviewPage() {
                           )}
                         </div>
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )
               })}
               {visibleRequests.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-6 py-12 text-center text-muted-foreground"
-                  >
-                    Нет заявок по этим фильтрам.
-                  </td>
-                </tr>
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="p-0">
+                    <Empty className="border-0">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <IconSearch />
+                        </EmptyMedia>
+                        <EmptyTitle>Ничего не найдено</EmptyTitle>
+                        <EmptyDescription>
+                          Под выбранные фильтры не попала ни одна заявка.
+                          Измените статус, точку продаж или строку поиска.
+                        </EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </section>
     </div>
@@ -403,7 +438,7 @@ function Evidence({ url }: { url: string | null }) {
   if (!url) {
     return (
       <span className="grid size-16 place-items-center rounded-lg bg-muted text-muted-foreground">
-        <IconPhoto className="size-6" />
+        <IconPhotoOff className="size-6" />
       </span>
     )
   }
@@ -417,26 +452,33 @@ function StatCard({
 }: {
   label: string
   value: number | string
-  tone?: "default" | "amber" | "green" | "red"
+  tone?: "default" | "warning" | "success" | "destructive"
 }) {
   const tones = {
     default: "text-foreground",
-    amber: "text-amber-600 dark:text-amber-300",
-    green: "text-emerald-600 dark:text-emerald-300",
-    red: "text-destructive",
+    warning: "text-warning",
+    success: "text-success",
+    destructive: "text-destructive",
   }
 
   return (
-    <div className="rounded-2xl border bg-card p-5">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className={`mt-2 font-heading text-3xl font-semibold ${tones[tone]}`}>
-        {value}
-      </p>
-    </div>
+    <Card size="sm">
+      <CardContent>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p
+          className={cn(
+            "mt-2 font-heading text-3xl font-semibold tabular-nums",
+            tones[tone]
+          )}
+        >
+          {value}
+        </p>
+      </CardContent>
+    </Card>
   )
 }
 
-function SortableHeader({
+function SortableHead({
   label,
   sortKey,
   sort,
@@ -448,8 +490,8 @@ function SortableHeader({
   onSort: (key: SortKey) => void
 }) {
   return (
-    <th
-      className="cursor-pointer px-4 py-3 font-medium select-none"
+    <TableHead
+      className="cursor-pointer select-none"
       onClick={() => onSort(sortKey)}
     >
       {label}
@@ -458,26 +500,24 @@ function SortableHeader({
           {sort.direction === "asc" ? "↑" : "↓"}
         </span>
       )}
-    </th>
+    </TableHead>
   )
 }
 
 function StatusBadge({ status }: { status: WriteOffStatus }) {
-  const styles = {
-    pending: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
-    approved: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-    rejected: "bg-destructive/10 text-destructive",
-  }
+  const variants = {
+    pending: "warning",
+    approved: "success",
+    rejected: "destructive",
+  } as const
   const Icon =
     status === "pending" ? IconClock : status === "approved" ? IconCheck : IconX
 
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${styles[status]}`}
-    >
-      <Icon className="size-3.5" />
+    <Badge variant={variants[status]}>
+      <Icon />
       {writeOffStatusLabels[status]}
-    </span>
+    </Badge>
   )
 }
 
