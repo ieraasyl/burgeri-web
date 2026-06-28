@@ -19,7 +19,12 @@ interface AuthEnv {
   BETTER_AUTH_URL?: string
 }
 
-const mobileTrustedOrigins = ["burgeri://", "burgeri://*"]
+const mobileTrustedOrigins = [
+  "burgeri://",
+  "burgeri://*",
+  // Expo Go uses exp:// origins when the app is opened from a QR code.
+  "exp://",
+]
 
 // Building the Better Auth instance (and its Drizzle adapter) is relatively
 // expensive; the env is constant per isolate, so memoize it across requests.
@@ -66,8 +71,9 @@ function createAuth() {
     // Required by the username plugin (employee табельный + password) and used
     // when an admin provisions employee logins server-side.
     emailAndPassword: { enabled: true, disableSignUp: true },
-    // The mobile app (scheme `burgeri`) signs in with the better-auth expo
-    // client and replays the session cookie; trust its custom-scheme origins.
+    // The mobile app signs in with the better-auth expo client and replays the
+    // session cookie; trust standalone (`burgeri://`) and Expo Go (`exp://`)
+    // custom-scheme origins.
     trustedOrigins: mobileTrustedOrigins,
     plugins: [
       expo(),

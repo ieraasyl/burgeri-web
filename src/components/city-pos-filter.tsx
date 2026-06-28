@@ -6,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 import { listPosByCity, sortCities } from "@/lib/point-of-sale"
 import type { PosCatalogEntry } from "@/lib/point-of-sale"
 
@@ -15,6 +16,8 @@ interface CityPosFilterProps {
   posId: string
   onCityChange: (city: string) => void
   onPosChange: (posId: string) => void
+  cityClassName?: string
+  posClassName?: string
 }
 
 export function CityPosFilter({
@@ -23,6 +26,8 @@ export function CityPosFilter({
   posId,
   onCityChange,
   onPosChange,
+  cityClassName,
+  posClassName,
 }: CityPosFilterProps) {
   const cities = sortCities(pointsOfSale.map((pos) => pos.city))
   const posOptions = city === "all" ? [] : listPosByCity(pointsOfSale, city)
@@ -39,7 +44,7 @@ export function CityPosFilter({
 
   return (
     <>
-      <div className="grid gap-1.5">
+      <div className={cn("grid min-w-0 gap-1.5", cityClassName)}>
         <span className="text-xs font-medium text-muted-foreground">Город</span>
         <Select
           value={city}
@@ -64,7 +69,7 @@ export function CityPosFilter({
           </SelectContent>
         </Select>
       </div>
-      <div className="grid gap-1.5">
+      <div className={cn("grid min-w-0 gap-1.5", posClassName)}>
         <span className="text-xs font-medium text-muted-foreground">
           Точка продаж
         </span>

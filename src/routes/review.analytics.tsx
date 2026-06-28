@@ -256,7 +256,7 @@ function AnalyticsPage() {
     decisions: (
       <Panel>
         <PanelHeader
-          title="Качество решений"
+          title="Удержания с сотрудников"
           subtitle="Доля одобрений и удержания с сотрудников"
           value={`${approvalRate}% одобрено`}
         />

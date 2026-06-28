@@ -38,7 +38,11 @@ import {
   iikoSyncStatusLabels,
   writeOffStatusLabels,
 } from "@/lib/write-offs"
-import type { WriteOffDeductionMode, WriteOffStatus } from "@/lib/write-offs"
+import type {
+  IikoSyncStatus,
+  WriteOffDeductionMode,
+  WriteOffStatus,
+} from "@/lib/write-offs"
 
 const getHistory = createServerFn({ method: "GET" }).handler(async () => {
   const { getWriteOffHistoryData } = await import("@/lib/write-offs.server")
@@ -52,6 +56,16 @@ export const Route = createFileRoute("/review/history")({
 
 type HistoryRequest = ReturnType<typeof Route.useLoaderData>["requests"][number]
 type StatusFilter = "all" | WriteOffStatus
+type SortKey =
+  | "requestNumber"
+  | "createdAt"
+  | "submitterName"
+  | "pointOfSaleName"
+  | "productName"
+  | "lossAmount"
+  | "deduction"
+  | "status"
+  | "iiko"
 
 const statusBadgeVariant = {
   pending: "warning",
@@ -66,6 +80,9 @@ function HistoryPage() {
   const [posId, setPosId] = useState("all")
   const [product, setProduct] = useState("all")
   const [search, setSearch] = useState("")
+  const [sort, setSort] = useState<{ key: SortKey; direction: "asc" | "desc" }>(
+    { key: "createdAt", direction: "desc" }
+  )
 
   const productOptions = useMemo(
     () => uniqueOptions(requests, (r) => [r.productId, r.productName]),
@@ -91,7 +108,7 @@ function HistoryPage() {
 
   const visible = useMemo(() => {
     const query = search.trim().toLocaleLowerCase()
-    return requests.filter((request) => {
+    const filtered = requests.filter((request) => {
       if (status !== "all" && request.status !== status) return false
       if (!matchesCityPosFilter(request, city, posId)) return false
       if (product !== "all" && request.productId !== product) return false
@@ -104,7 +121,9 @@ function HistoryPage() {
         request.iikoDocumentId,
       ].some((value) => value?.toLocaleLowerCase().includes(query))
     })
-  }, [requests, status, city, posId, product, search])
+
+    return [...filtered].sort((a, b) => compareHistoryRequests(a, b, sort))
+  }, [requests, status, city, posId, product, search, sort])
 
   const visibleApprovedLoss = useMemo(
     () =>
@@ -113,6 +132,14 @@ function HistoryPage() {
         .reduce((sum, request) => sum + (request.lossAmount ?? 0), 0),
     [visible]
   )
+
+  function toggleSort(key: SortKey) {
+    setSort((current) => ({
+      key,
+      direction:
+        current.key === key && current.direction === "asc" ? "desc" : "asc",
+    }))
+  }
 
   return (
     <div>
@@ -147,6 +174,7 @@ function HistoryPage() {
             posId={posId}
             onCityChange={setCity}
             onPosChange={setPosId}
+            posClassName="xl:col-span-2"
           />
           <Field label="Продукт">
             <Select
@@ -201,15 +229,60 @@ function HistoryPage() {
         <Table className="min-w-[960px]">
           <TableHeader className="bg-muted/40">
             <TableRow className="hover:bg-transparent">
-              <TableHead>Номер</TableHead>
-              <TableHead>Подано</TableHead>
-              <TableHead>Сотрудник</TableHead>
-              <TableHead>Точка продаж</TableHead>
-              <TableHead>Продукт</TableHead>
-              <TableHead>Потери</TableHead>
-              <TableHead>Удержание</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead>iiko</TableHead>
+              <SortableHead
+                label="Номер"
+                sortKey="requestNumber"
+                sort={sort}
+                onSort={toggleSort}
+              />
+              <SortableHead
+                label="Подано"
+                sortKey="createdAt"
+                sort={sort}
+                onSort={toggleSort}
+              />
+              <SortableHead
+                label="Сотрудник"
+                sortKey="submitterName"
+                sort={sort}
+                onSort={toggleSort}
+              />
+              <SortableHead
+                label="Точка продаж"
+                sortKey="pointOfSaleName"
+                sort={sort}
+                onSort={toggleSort}
+              />
+              <SortableHead
+                label="Продукт"
+                sortKey="productName"
+                sort={sort}
+                onSort={toggleSort}
+              />
+              <SortableHead
+                label="Потери"
+                sortKey="lossAmount"
+                sort={sort}
+                onSort={toggleSort}
+              />
+              <SortableHead
+                label="Удержание"
+                sortKey="deduction"
+                sort={sort}
+                onSort={toggleSort}
+              />
+              <SortableHead
+                label="Статус"
+                sortKey="status"
+                sort={sort}
+                onSort={toggleSort}
+              />
+              <SortableHead
+                label="iiko"
+                sortKey="iiko"
+                sort={sort}
+                onSort={toggleSort}
+              />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -290,6 +363,95 @@ function uniqueOptions(
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
+function compareHistoryRequests(
+  a: HistoryRequest,
+  b: HistoryRequest,
+  sort: { key: SortKey; direction: "asc" | "desc" }
+) {
+  const comparison =
+    sort.key === "createdAt" || sort.key === "lossAmount"
+      ? compareNumber(sortNumber(a, sort.key), sortNumber(b, sort.key))
+      : compareText(sortText(a, sort.key), sortText(b, sort.key))
+
+  const directed = sort.direction === "asc" ? comparison : -comparison
+  return directed || compareText(a.requestNumber, b.requestNumber)
+}
+
+function sortNumber(request: HistoryRequest, key: SortKey) {
+  if (key === "createdAt") {
+    return new Date(request.createdAt).getTime()
+  }
+  if (key === "lossAmount") {
+    return request.lossAmount ?? 0
+  }
+  return 0
+}
+
+function sortText(request: HistoryRequest, key: SortKey) {
+  if (key === "requestNumber") {
+    return request.requestNumber
+  }
+  if (key === "submitterName") {
+    return request.submitter?.name ?? ""
+  }
+  if (key === "pointOfSaleName") {
+    return request.pointOfSaleName
+  }
+  if (key === "productName") {
+    return request.productName
+  }
+  if (key === "deduction") {
+    return [
+      deductionModeLabels[request.deductionMode as WriteOffDeductionMode],
+      request.chargedEmployee?.name ?? "",
+    ].join(" ")
+  }
+  if (key === "status") {
+    return writeOffStatusLabels[request.status as WriteOffStatus]
+  }
+  if (key === "iiko") {
+    return (
+      request.iikoDocumentId ??
+      iikoSyncStatusLabels[request.iikoSyncStatus as IikoSyncStatus]
+    )
+  }
+  return ""
+}
+
+function compareNumber(a: number, b: number) {
+  return a - b
+}
+
+function compareText(a: string, b: string) {
+  return a.localeCompare(b, undefined, { sensitivity: "base" })
+}
+
+function SortableHead({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string
+  sortKey: SortKey
+  sort: { key: SortKey; direction: "asc" | "desc" }
+  onSort: (key: SortKey) => void
+}) {
+  return (
+    <TableHead
+      className="cursor-pointer select-none"
+      onClick={() => onSort(sortKey)}
+    >
+      {label}
+      {sort.key === sortKey && (
+        <span className="ml-1 text-muted-foreground">
+          {sort.direction === "asc" ? "↑" : "↓"}
+        </span>
+      )}
+    </TableHead>
+  )
+}
+
 function Field({
   label,
   children,
@@ -298,7 +460,7 @@ function Field({
   children: React.ReactNode
 }) {
   return (
-    <div className="grid gap-1.5">
+    <div className="grid min-w-0 gap-1.5">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
       {children}
     </div>
