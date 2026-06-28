@@ -59,15 +59,15 @@ export interface SeedWriteOff {
   deductionMode: DeductionMode
   deductionEmployeeId: string | null
   comment: string
-  photoFileId: string | null
-  photoUrl: string | null
+  photoFileId: string
+  photoUrl: string
   status: WriteOffStatus
   reviewerId: string | null
   reviewComment: string | null
   reviewedAt: Date | null
   iikoSyncStatus: IikoSyncStatus
   iikoDocumentId: string | null
-  mlClassification: WriteOffMlClassification | null
+  mlClassification: WriteOffMlClassification
   createdAt: Date
 }
 
@@ -457,7 +457,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(13, 13),
     daysAgo(13, 15),
     "synced",
-    "IIKO-WO-20260615-0009"
+    "IIKO-WO-20260615-0009",
+    "pattyOvercooked"
   ),
   request(
     10,
@@ -475,7 +476,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(12, 10),
     daysAgo(12, 12),
     "synced",
-    "IIKO-WO-20260616-0010"
+    "IIKO-WO-20260616-0010",
+    "tomatoOverripe"
   ),
   request(
     11,
@@ -512,7 +514,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(10, 18),
     daysAgo(10, 19),
     "not_started",
-    null
+    null,
+    "tomatoPrepPan"
   ),
   request(
     13,
@@ -530,7 +533,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(9, 15),
     daysAgo(9, 16),
     "synced",
-    "IIKO-WO-20260619-0013"
+    "IIKO-WO-20260619-0013",
+    "friesFloor"
   ),
   request(
     14,
@@ -548,7 +552,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(8, 10),
     daysAgo(8, 12),
     "queued",
-    null
+    null,
+    "sauceExpired"
   ),
   request(
     15,
@@ -585,7 +590,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(7, 11),
     daysAgo(7, 12),
     "synced",
-    "IIKO-WO-20260621-0016"
+    "IIKO-WO-20260621-0016",
+    "tomatoPrepPan"
   ),
   request(
     17,
@@ -698,7 +704,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(4, 18),
     daysAgo(4, 19),
     "not_started",
-    null
+    null,
+    "pattyOvercooked"
   ),
   request(
     23,
@@ -735,7 +742,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(3, 11),
     null,
     "not_started",
-    null
+    null,
+    "tomatoPrepPan"
   ),
   request(
     25,
@@ -772,7 +780,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(3, 20),
     daysAgo(3, 21),
     "not_started",
-    null
+    null,
+    "tomatoPrepPan"
   ),
   request(
     27,
@@ -828,7 +837,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(2, 17),
     null,
     "not_started",
-    null
+    null,
+    "friesFloor"
   ),
   request(
     30,
@@ -846,7 +856,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(2, 19),
     daysAgo(2, 20),
     "not_started",
-    null
+    null,
+    "tomatoOverripe"
   ),
   request(
     31,
@@ -902,7 +913,8 @@ export const seedWriteOffs: SeedWriteOff[] = [
     daysAgo(1, 16),
     null,
     "not_started",
-    null
+    null,
+    "tomatoOverripe"
   ),
   request(
     34,
@@ -1005,10 +1017,10 @@ function request(
   reviewedAt: Date | null,
   iikoSyncStatus: IikoSyncStatus,
   iikoDocumentId: string | null,
-  photoKey?: keyof typeof photoUrls
+  photoKey: keyof typeof photoUrls
 ): SeedWriteOff {
   const padded = String(index).padStart(5, "0")
-  const photoUrl = photoKey ? photoUrls[photoKey] : null
+  const photoUrl = photoUrls[photoKey]
   return {
     id: `wo_${padded}`,
     requestNumber: `WR-${padded}`,
@@ -1020,7 +1032,7 @@ function request(
     deductionMode,
     deductionEmployeeId,
     comment,
-    photoFileId: photoKey ? `seed-${photoKey}` : null,
+    photoFileId: `seed-${photoKey}`,
     photoUrl,
     status,
     reviewerId,
@@ -1028,7 +1040,7 @@ function request(
     reviewedAt,
     iikoSyncStatus,
     iikoDocumentId,
-    mlClassification: photoKey ? mlForPhoto(photoKey) : null,
+    mlClassification: mlForPhoto(photoKey),
     createdAt,
   }
 }

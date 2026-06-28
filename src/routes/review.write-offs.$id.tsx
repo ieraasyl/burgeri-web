@@ -4,7 +4,7 @@ import {
   IconClock,
   IconCloudUpload,
   IconLoader2,
-  IconPhoto,
+  IconPhotoOff,
   IconX,
 } from "@tabler/icons-react"
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
@@ -12,7 +12,9 @@ import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { useState } from "react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { WriteOffMlPanel } from "@/components/write-off-ml-panel"
 import { reviewWriteOffRequest, syncWriteOffToIiko } from "@/lib/actions"
 import {
@@ -122,7 +124,7 @@ function WriteOffDetailPage() {
             </a>
           ) : (
             <div className="grid aspect-square w-full place-items-center rounded-2xl border border-dashed text-muted-foreground">
-              <IconPhoto className="size-10" />
+              <IconPhotoOff className="size-10" />
             </div>
           )}
           <p className="mt-2 text-center text-xs text-muted-foreground">
@@ -213,13 +215,13 @@ function WriteOffDetailPage() {
           {request.status === "pending" && (
             <div className="mt-6 rounded-2xl border bg-card p-4">
               <p className="text-sm font-medium">Решение</p>
-              <textarea
+              <Textarea
                 value={reviewComment}
                 onChange={(event) => setReviewComment(event.target.value)}
                 rows={3}
                 maxLength={1000}
                 placeholder="Заметка ревьюера (обязательна при отклонении)"
-                className="mt-3 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                className="mt-3"
               />
               <div className="mt-3 flex gap-2">
                 <Button
@@ -310,7 +312,7 @@ function IikoPanel({
         </pre>
       ) : null}
       {isSynced && (
-        <p className="mt-3 text-xs text-emerald-600 dark:text-emerald-300">
+        <p className="mt-3 text-xs font-medium text-success">
           Списание проведено в iiko.
         </p>
       )}
@@ -337,21 +339,19 @@ function DetailRow({
 }
 
 function StatusBadge({ status }: { status: WriteOffStatus }) {
-  const styles = {
-    pending: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
-    approved: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-    rejected: "bg-destructive/10 text-destructive",
-  }
+  const variants = {
+    pending: "warning",
+    approved: "success",
+    rejected: "destructive",
+  } as const
   const Icon =
     status === "pending" ? IconClock : status === "approved" ? IconCheck : IconX
 
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${styles[status]}`}
-    >
-      <Icon className="size-3.5" />
+    <Badge variant={variants[status]}>
+      <Icon />
       {writeOffStatusLabels[status]}
-    </span>
+    </Badge>
   )
 }
 

@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge"
 import {
   confidenceColor,
   formatDamageLevel,
@@ -57,21 +58,17 @@ export function WriteOffMlPanel({
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span
-              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-                classification.needsManualCheck
-                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                  : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-              }`}
+            <Badge
+              variant={classification.needsManualCheck ? "warning" : "success"}
             >
               {classification.needsManualCheck
                 ? "Нужна ручная проверка"
                 : "Модель уверена"}
-            </span>
+            </Badge>
             {classification.productMismatch && (
-              <span className="inline-flex items-center rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">
+              <Badge variant="destructive">
                 Не совпадает с «{productName}»
-              </span>
+              </Badge>
             )}
           </div>
 

@@ -158,14 +158,14 @@ function AdminStaffPage() {
             type="password"
             placeholder="Не менее 8 символов"
           />
-          <label className="grid gap-1.5">
+          <label className="grid min-w-0 gap-1.5">
             <span className="text-xs font-medium text-muted-foreground">
               Точка продаж по умолчанию
             </span>
             <select
               name="defaultPointOfSaleId"
               defaultValue=""
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+              className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
             >
               <option value="">Не указана</option>
               {initial.pointsOfSale.map((pos) => (
@@ -307,9 +307,9 @@ function LabelledInput({
   ...props
 }: { label: string } & React.ComponentProps<typeof Input>) {
   return (
-    <label className="grid gap-1.5">
+    <label className="grid min-w-0 gap-1.5">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <Input required {...props} />
+      <Input required className="w-full min-w-0" {...props} />
     </label>
   )
 }

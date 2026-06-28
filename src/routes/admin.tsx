@@ -44,20 +44,18 @@ function AdminLayout() {
         </p>
       </section>
 
-      <nav className="mt-6 flex flex-wrap gap-1">
+      <nav className="mt-6 inline-flex w-fit max-w-full flex-wrap gap-1 rounded-full bg-muted p-1">
         {tabs.map((tab) => (
           <Link
             key={tab.to}
             to={tab.to}
             activeOptions={{ exact: tab.exact }}
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+              "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             )}
             activeProps={{
-              className:
-                "border-primary bg-primary text-primary-foreground hover:bg-primary",
+              className: "bg-background text-foreground shadow-sm",
             }}
-            inactiveProps={{ className: "text-muted-foreground" }}
           >
             <tab.icon className="size-4" />
             {tab.label}
