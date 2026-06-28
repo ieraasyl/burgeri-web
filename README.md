@@ -50,8 +50,8 @@ real iiko Server API credentials to go live.
 > recent runtime) and `pnpm`.
 
 1. `pnpm install`
-2. Copy `.env.example` to `.dev.vars` and set a strong `BETTER_AUTH_SECRET`
-   (and `BETTER_AUTH_URL=http://localhost:3000`).
+2. Copy `.dev.vars.example` to `.dev.vars` and set a strong
+   `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL=http://localhost:3000`.
 3. Create the D1 database and put its id in `wrangler.jsonc`:
    `pnpm wrangler d1 create burgeri-web-db`.
 4. Apply migrations and seed realistic local data:
@@ -83,3 +83,6 @@ that seed password with `SEED_STAFF_PASSWORD` when running `pnpm db:seed:*`.
 - The original Mentoria mentorship foundation (courses, opportunities, quizzes)
   has been removed; only the write-off domain and the auth/Cloudflare foundation
   remain.
+- For production, set `BETTER_AUTH_URL=https://burgeri.ualikhan.dev` in the
+  Worker environment and set `BETTER_AUTH_SECRET` with `pnpm wrangler secret put
+  BETTER_AUTH_SECRET`; do not commit secrets in `wrangler.jsonc`.

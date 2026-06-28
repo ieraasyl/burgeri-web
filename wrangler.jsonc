@@ -19,10 +19,6 @@
       "migrations_dir": "drizzle",
     },
   ],
-  "vars": {
-    "BETTER_AUTH_URL": "https://burgeri.ualikhan.dev",
-    "BETTER_AUTH_SECRET": "720bd7c2999248e45c7da7eec1d272535b93f5aeb792cc802f2df5bd437c3841",
-  },
   "routes": [
     {
       "pattern": "burgeri.ualikhan.dev",
