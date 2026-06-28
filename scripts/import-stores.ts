@@ -106,8 +106,8 @@ export const seedPointsOfSale = [
 ${body},
 ] as const
 
-/** Stable IDs for local demo users and write-offs. */
-export const demoStoreIds = {
+/** Stable IDs for seeded users and write-offs. */
+export const seedStoreIds = {
   kuueva: "545af44c-0975-4ebb-87cd-d3e44f0be83d",
   mega: "36280240-882d-496b-b2ee-0ccea87bafc5",
   ritzPalace: "b148c7c1-2e41-49b6-8729-e6d2d58d7bbd",
@@ -116,9 +116,19 @@ export const demoStoreIds = {
   cityMall: "6dbdb4be-d92b-45e0-88b5-a4f8e2506557",
   tsumKar: "820ee7d8-a606-4f16-8c44-0e2292b1b83e",
   greenPlaza: "1627e81f-f02d-431d-83ec-2cc35a06b804",
+  shakhterov: "01288a12-11d8-481e-a7cf-c3c0fe74f068",
+  orbit: "0d61770f-05f3-4efc-9c5f-a0e15a0f6be7",
+  forum: "0a4d2b0a-d126-4232-878d-c2d0078a9793",
+  khanShatyr: "a26e3db9-eeda-46bb-b7e9-b18ae2b690aa",
+  north: "126d308d-20a1-437e-8560-7c3aee4ce29c",
+  diamondPlaza: "7c724281-6ec7-4cb9-8d8d-11d17de6dd65",
+  mart: "05d95ea5-6285-4192-b2c0-34fc892883a2",
+  akzhar: "a7583e5d-6970-49fd-9e9d-cf2c8c3c8371",
+  satellite: "1586e598-4f90-4968-acf8-2b28a9bbffec",
+  jubilee: "a4d5959a-0461-44c4-b9bc-ac6456d1e7d5",
 } as const
 
-/** Retired Burgeri demo stores — deactivated on seed. */
+/** Retired placeholder stores — deactivated on seed. */
 export const legacyPlaceholderStoreIds = [
   "pos-abai",
   "pos-mega",

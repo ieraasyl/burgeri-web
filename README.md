@@ -54,7 +54,7 @@ real iiko Server API credentials to go live.
    (and `BETTER_AUTH_URL=http://localhost:3000`).
 3. Create the D1 database and put its id in `wrangler.jsonc`:
    `pnpm wrangler d1 create burgeri-web-db`.
-4. Apply migrations and seed demo data:
+4. Apply migrations and seed realistic local data:
    `pnpm db:migrate:local` then `pnpm db:seed:local`.
    (The initial migration is committed under `drizzle/`; run `pnpm db:generate`
    only after changing `src/db/schema.ts`.)
@@ -62,14 +62,15 @@ real iiko Server API credentials to go live.
 
 ### Seeded accounts
 
-`pnpm db:seed:local` creates staff, catalog data, password credentials, and ~10
-sample requests. Web reviewers sign in with email/password.
+`pnpm db:seed:local` creates anonymized staff, realistic catalog data,
+password credentials, local evidence photos, stored ML classifications, and 36
+sample write-off requests. Web reviewers sign in with email/password.
 
-| Email | Role |
-| --- | --- |
-| `admin@burgeri.kz` | admin |
+| Email                 | Role     |
+| --------------------- | -------- |
+| `admin@burgeri.kz`    | admin    |
 | `reviewer@burgeri.kz` | reviewer |
-| `manager@burgeri.kz` | reviewer |
+| `manager@burgeri.kz`  | reviewer |
 
 Seeded mobile employee logins use the employee id as username, for example
 `EMP-1001`. Seeded web and mobile passwords default to `Burgeri123!`. Override
